@@ -1,6 +1,7 @@
 @preconcurrency import ApplicationServices
 import Foundation
 
+@MainActor
 final class HotkeyManager {
     private let onTrigger: () -> Void
     private var eventTap: CFMachPort?
@@ -8,12 +9,20 @@ final class HotkeyManager {
 
     init(onTrigger: @escaping () -> Void) {
         self.onTrigger = onTrigger
+
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(hotkeyConfigChanged),
+            name: .hotkeyConfigChanged,
+            object: nil
+        )
     }
 
     deinit {
-        if let eventTap {
-            CGEvent.tapEnable(tap: eventTap, enable: false)
+        if let tap = eventTap {
+            CGEvent.tapEnable(tap: tap, enable: false)
         }
+        NotificationCenter.default.removeObserver(self)
     }
 
     func register() {
@@ -23,32 +32,45 @@ final class HotkeyManager {
         if trusted {
             createEventTap()
         } else {
-            // Poll until the user grants access, then create the tap
             pollUntilTrusted()
         }
     }
 
+    @objc private func hotkeyConfigChanged() {
+        tearDown()
+        createEventTap()
+    }
+
     private func pollUntilTrusted() {
-        DispatchQueue.global(qos: .background).async { [weak self] in
+        Task.detached { [weak self] in
             while !AXIsProcessTrusted() {
-                Thread.sleep(forTimeInterval: 1.0)
+                try? await Task.sleep(nanoseconds: 1_000_000_000)
             }
-            DispatchQueue.main.async { [weak self] in
-                self?.createEventTap()
+            await self?.createEventTap()
+        }
+    }
+
+    private func tearDown() {
+        if let tap = eventTap {
+            CGEvent.tapEnable(tap: tap, enable: false)
+            if let source = runLoopSource {
+                CFRunLoopRemoveSource(CFRunLoopGetMain(), source, .commonModes)
             }
         }
+        eventTap = nil
+        runLoopSource = nil
     }
 
     private func createEventTap() {
         guard eventTap == nil else { return }
 
+        let config = HotkeyConfig.current
+        let targetKeyCode = config.keyCode
+        let targetModifiers = CGEventFlags(rawValue: config.modifierFlags)
+
         let eventMask = CGEventMask(1 << CGEventType.keyDown.rawValue)
         let callback: CGEventTapCallBack = { _, type, event, userInfo in
-            guard type == .keyDown else {
-                return Unmanaged.passUnretained(event)
-            }
-
-            guard let userInfo else {
+            guard type == .keyDown, let userInfo else {
                 return Unmanaged.passUnretained(event)
             }
 
@@ -56,13 +78,16 @@ final class HotkeyManager {
             let keyCode = event.getIntegerValueField(.keyboardEventKeycode)
             let modifiers = event.flags.intersection([.maskAlternate, .maskCommand, .maskControl, .maskShift])
 
-            guard keyCode == 40, modifiers == .maskAlternate else {
+            guard keyCode == manager.targetKeyCode, modifiers == manager.targetModifiers else {
                 return Unmanaged.passUnretained(event)
             }
 
             manager.onTrigger()
             return nil
         }
+
+        self.targetKeyCode = targetKeyCode
+        self.targetModifiers = targetModifiers
 
         guard let tap = CGEvent.tapCreate(
             tap: .cgSessionEventTap,
@@ -71,9 +96,7 @@ final class HotkeyManager {
             eventsOfInterest: eventMask,
             callback: callback,
             userInfo: Unmanaged.passUnretained(self).toOpaque()
-        ) else {
-            return
-        }
+        ) else { return }
 
         let source = CFMachPortCreateRunLoopSource(kCFAllocatorDefault, tap, 0)
         self.eventTap = tap
@@ -81,4 +104,8 @@ final class HotkeyManager {
         CFRunLoopAddSource(CFRunLoopGetMain(), source, .commonModes)
         CGEvent.tapEnable(tap: tap, enable: true)
     }
+
+    // Stored so the C callback can read them off self
+    private var targetKeyCode: Int64 = HotkeyConfig.default.keyCode
+    private var targetModifiers: CGEventFlags = CGEventFlags(rawValue: HotkeyConfig.default.modifierFlags)
 }
