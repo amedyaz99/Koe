@@ -68,13 +68,25 @@ final class HotkeyManager {
         let targetKeyCode = config.keyCode
         let targetModifiers = CGEventFlags(rawValue: config.modifierFlags)
 
-        let eventMask = CGEventMask(1 << CGEventType.keyDown.rawValue)
-        let callback: CGEventTapCallBack = { _, type, event, userInfo in
-            guard type == .keyDown, let userInfo else {
+        let eventMask = CGEventMask(
+            (1 << CGEventType.keyDown.rawValue) |
+            (1 << CGEventType.tapDisabledByTimeout.rawValue) |
+            (1 << CGEventType.tapDisabledByUserInput.rawValue)
+        )
+        let callback: CGEventTapCallBack = { proxy, type, event, userInfo in
+            guard let userInfo else { return Unmanaged.passUnretained(event) }
+            let manager = Unmanaged<HotkeyManager>.fromOpaque(userInfo).takeUnretainedValue()
+
+            // macOS disables taps that appear slow — re-enable immediately
+            if type == .tapDisabledByTimeout || type == .tapDisabledByUserInput {
+                if let tap = manager.eventTap {
+                    CGEvent.tapEnable(tap: tap, enable: true)
+                }
                 return Unmanaged.passUnretained(event)
             }
 
-            let manager = Unmanaged<HotkeyManager>.fromOpaque(userInfo).takeUnretainedValue()
+            guard type == .keyDown else { return Unmanaged.passUnretained(event) }
+
             let keyCode = event.getIntegerValueField(.keyboardEventKeycode)
             let modifiers = event.flags.intersection([.maskAlternate, .maskCommand, .maskControl, .maskShift])
 
