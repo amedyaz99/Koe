@@ -37,6 +37,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             self?.toggleRecording()
         }
         hotkeyManager.register()
+
+        // Close the empty SwiftUI Settings window macOS auto-opens on launch
+        NSApp.windows.filter { $0.title.contains("Settings") }.forEach { $0.close() }
     }
 
     private func setupMenuBar() {
