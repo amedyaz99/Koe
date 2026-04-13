@@ -1,4 +1,4 @@
-// swift-tools-version: 5.5
+// swift-tools-version: 6.0
 
 import PackageDescription
 
@@ -10,7 +10,8 @@ let package = Package(
     targets: [
         .executableTarget(
             name: "Koe",
-            path: "Sources/Koe"
+            path: "Sources/Koe",
+            exclude: ["Resources/Info.plist"]
         )
     ]
 )
