@@ -10,7 +10,6 @@ enum HUDState {
     case error
 }
 
-
 // MARK: - HUD View
 
 struct HUDView: View {
@@ -18,18 +17,18 @@ struct HUDView: View {
 
     var body: some View {
         ZStack {
-            // Background
-            RoundedRectangle(cornerRadius: 22)
+            // Base material
+            RoundedRectangle(cornerRadius: 22, style: .continuous)
                 .fill(.ultraThinMaterial)
 
-            // Tint overlay
+            // State tint
             if let tint = tintColor {
-                RoundedRectangle(cornerRadius: 22)
+                RoundedRectangle(cornerRadius: 22, style: .continuous)
                     .fill(tint.opacity(tintOpacity))
             }
 
             // Border
-            RoundedRectangle(cornerRadius: 22)
+            RoundedRectangle(cornerRadius: 22, style: .continuous)
                 .strokeBorder(borderColor, lineWidth: 0.5)
 
             // Content
@@ -37,13 +36,13 @@ struct HUDView: View {
                 iconView
                     .frame(width: 28, height: 28)
 
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: 3) {
                     Text(title)
-                        .font(.system(size: 13, weight: .medium))
+                        .font(.system(size: 12, weight: .medium, design: .monospaced))
                         .foregroundStyle(.primary)
 
                     Text(subtitle)
-                        .font(.system(size: 11, weight: .regular))
+                        .font(.system(size: 10, weight: .regular, design: .monospaced))
                         .foregroundStyle(.secondary)
                         .lineLimit(1)
                         .truncationMode(.tail)
@@ -60,26 +59,26 @@ struct HUDView: View {
     private var iconView: some View {
         switch state {
         case .recording:
-            WaveformView()
+            WaveformView(barWidth: 3, minHeight: 8, maxHeight: 22, color: KoeTheme.vermilion)
                 .frame(width: 28)
         case .transcribing:
             ProgressView()
                 .scaleEffect(0.8)
-                .tint(Color(hex: "#4B6BC8"))
+                .tint(KoeTheme.transcribingColor)
         case .done:
             Circle()
-                .fill(Color(hex: "#508C5A"))
+                .fill(KoeTheme.doneColor)
                 .overlay(
                     Image(systemName: "checkmark")
-                        .font(.system(size: 13, weight: .semibold))
+                        .font(.system(size: 12, weight: .semibold))
                         .foregroundStyle(.white)
                 )
         case .error:
             Circle()
-                .fill(Color(hex: "#B85A3C"))
+                .fill(KoeTheme.errorColor)
                 .overlay(
                     Text("!")
-                        .font(.system(size: 15, weight: .bold))
+                        .font(.system(size: 14, weight: .bold))
                         .foregroundStyle(.white)
                 )
         }
@@ -87,8 +86,8 @@ struct HUDView: View {
 
     private var title: String {
         switch state {
-        case .recording:    return "Recording…"
-        case .transcribing: return "Transcribing…"
+        case .recording:    return "Buffer: Active"
+        case .transcribing: return "Buffer: Processing"
         case .done:         return "Copied to clipboard"
         case .error:        return "Transcription failed"
         }
@@ -96,8 +95,8 @@ struct HUDView: View {
 
     private var subtitle: String {
         switch state {
-        case .recording:         return "Press ⌥K to stop"
-        case .transcribing:      return "Processing audio"
+        case .recording:         return "● REC  — press ⌥Space to stop"
+        case .transcribing:      return "◌  Processing audio"
         case .done(let text):    return text
         case .error:             return "Check whisper-cli is installed"
         }
@@ -105,10 +104,10 @@ struct HUDView: View {
 
     private var tintColor: Color? {
         switch state {
-        case .recording:    return Color(hex: "#C47D3A")
+        case .recording:    return KoeTheme.vermilion
         case .transcribing: return nil
-        case .done:         return Color(hex: "#508C5A")
-        case .error:        return Color(hex: "#B85A3C")
+        case .done:         return KoeTheme.doneColor
+        case .error:        return KoeTheme.errorColor
         }
     }
 
@@ -123,10 +122,10 @@ struct HUDView: View {
 
     private var borderColor: Color {
         switch state {
-        case .recording:    return Color(hex: "#C47D3A").opacity(0.2)
+        case .recording:    return KoeTheme.vermilion.opacity(0.25)
         case .transcribing: return Color.black.opacity(0.08)
-        case .done:         return Color(hex: "#508C5A").opacity(0.2)
-        case .error:        return Color(hex: "#B85A3C").opacity(0.15)
+        case .done:         return KoeTheme.doneColor.opacity(0.2)
+        case .error:        return KoeTheme.errorColor.opacity(0.15)
         }
     }
 }
@@ -172,4 +171,3 @@ class HUDWindow: NSWindow {
         setFrameOrigin(NSPoint(x: x, y: y))
     }
 }
-

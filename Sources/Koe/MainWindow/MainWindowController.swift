@@ -13,6 +13,8 @@ class MainWindowController: NSWindowController {
         window.minSize = NSSize(width: 480, height: 400)
         window.center()
         window.isReleasedWhenClosed = false
+        window.titlebarAppearsTransparent = true
+        window.backgroundColor = NSColor(red: 0.973, green: 0.961, blue: 0.941, alpha: 1.0)
         
         self.init(window: window)
         
