@@ -3,43 +3,53 @@ import SwiftUI
 
 // MARK: - State
 
-enum HUDState {
+enum HUDState: Equatable {
     case recording
     case transcribing
     case done(text: String)
     case error
 }
 
+// MARK: - State Holder
+
+class HUDStateHolder: ObservableObject {
+    @Published var hudState: HUDState = .recording
+}
+
 // MARK: - HUD View
 
 struct HUDView: View {
-    let state: HUDState
+    @ObservedObject var holder: HUDStateHolder
 
     var body: some View {
         ZStack {
-            RoundedRectangle(cornerRadius: 15, style: .continuous)
-                .fill(Color(red: 0.067, green: 0.067, blue: 0.067))
+            Color.clear // fills the 300x44 window transparently
+            ZStack {
+                RoundedRectangle(cornerRadius: 15, style: .continuous)
+                    .fill(Color(red: 0.067, green: 0.067, blue: 0.067))
 
-            RoundedRectangle(cornerRadius: 15, style: .continuous)
-                .strokeBorder(glowColor.opacity(0.35), lineWidth: 1)
+                RoundedRectangle(cornerRadius: 15, style: .continuous)
+                    .strokeBorder(glowColor.opacity(0.35), lineWidth: 1)
 
-            HStack(spacing: 10) {
-                leadingView
-                trailingView
+                HStack(spacing: 10) {
+                    leadingView
+                    trailingView
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
             }
-            .padding(.horizontal, 14)
+            .fixedSize()
+            .shadow(color: glowColor.opacity(glowOpacity), radius: glowRadius)
+            .modifier(RecordingGlowModifier(isRecording: {
+                if case .recording = holder.hudState { return true }
+                return false
+            }()))
         }
-        .frame(width: 170, height: 30)
-        .shadow(color: glowColor.opacity(glowOpacity), radius: glowRadius)
-        .modifier(RecordingGlowModifier(isRecording: {
-            if case .recording = state { return true }
-            return false
-        }()))
     }
 
     @ViewBuilder
     private var leadingView: some View {
-        switch state {
+        switch holder.hudState {
         case .recording:
             BlinkingDot()
         case .transcribing:
@@ -58,7 +68,7 @@ struct HUDView: View {
 
     @ViewBuilder
     private var trailingView: some View {
-        switch state {
+        switch holder.hudState {
         case .recording:
             CompactWaveformView()
         case .transcribing:
@@ -77,7 +87,7 @@ struct HUDView: View {
     }
 
     private var glowColor: Color {
-        switch state {
+        switch holder.hudState {
         case .recording:    return Color(red: 0.863, green: 0.2, blue: 0.2)
         case .transcribing: return Color(red: 0.392, green: 0.471, blue: 0.878)
         case .done:         return Color(red: 0.235, green: 0.722, blue: 0.353)
@@ -86,7 +96,7 @@ struct HUDView: View {
     }
 
     private var glowOpacity: Double {
-        switch state {
+        switch holder.hudState {
         case .recording:    return 0   // handled by RecordingGlowModifier
         case .transcribing: return 0.3
         case .done:         return 0.3
@@ -95,7 +105,7 @@ struct HUDView: View {
     }
 
     private var glowRadius: CGFloat {
-        switch state {
+        switch holder.hudState {
         case .recording:    return 0
         case .transcribing: return 10
         case .done:         return 10
@@ -191,9 +201,11 @@ struct RecordingGlowModifier: ViewModifier {
 // MARK: - HUD Window
 
 class HUDWindow: NSWindow {
+    private let stateHolder = HUDStateHolder()
+
     init() {
         super.init(
-            contentRect: NSRect(x: 0, y: 0, width: 170, height: 30),
+            contentRect: NSRect(x: 0, y: 0, width: 300, height: 44),
             styleMask: [.borderless],
             backing: .buffered,
             defer: false
@@ -204,12 +216,15 @@ class HUDWindow: NSWindow {
         ignoresMouseEvents = true
         collectionBehavior = [.canJoinAllSpaces, .stationary]
         isReleasedWhenClosed = false
+        contentView = NSHostingView(rootView: HUDView(holder: stateHolder))
     }
 
     func show(state: HUDState) {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
-            self.contentView = NSHostingView(rootView: HUDView(state: state))
+            withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
+                self.stateHolder.hudState = state
+            }
             self.position()
             self.makeKeyAndOrderFront(nil)
         }
@@ -224,7 +239,7 @@ class HUDWindow: NSWindow {
     private func position() {
         guard let screen = NSScreen.main else { return }
         let frame = screen.visibleFrame
-        let x = frame.midX - 85
+        let x = frame.midX - 150  // center the 300pt window
         let y = frame.minY + 60
         setFrameOrigin(NSPoint(x: x, y: y))
     }
