@@ -3,6 +3,7 @@ import SwiftUI
 
 struct SettingsTab: View {
     @AppStorage("koe.launchAtLogin") private var launchAtLogin = false
+    @AppStorage("koe.autoPaste") private var autoPasteEnabled = true
     @State private var currentConfig = HotkeyConfig.current
     @State private var isRecordingHotkey = false
     @State private var monitor: Any?
@@ -51,16 +52,36 @@ struct SettingsTab: View {
                     heading: "System",
                     japanese: "システム"
                 ) {
-                    HStack {
-                        Text("Launch at login")
-                            .font(KoeTheme.monoSmall)
-                            .foregroundColor(KoeTheme.washiPaper)
-                        
-                        Spacer()
-                        
-                        Toggle("", isOn: $launchAtLogin)
-                            .toggleStyle(.switch)
-                            .tint(KoeTheme.vermilion)
+                    VStack(spacing: 12) {
+                        HStack {
+                            Text("Launch at login")
+                                .font(KoeTheme.monoSmall)
+                                .foregroundColor(KoeTheme.washiPaper)
+                            
+                            Spacer()
+                            
+                            Toggle("", isOn: $launchAtLogin)
+                                .toggleStyle(.switch)
+                                .tint(KoeTheme.vermilion)
+                        }
+
+                        Divider()
+                            .background(KoeTheme.washiMuted.opacity(0.15))
+
+                        HStack(alignment: .top) {
+                            VStack(alignment: .leading, spacing: 3) {
+                                Text("Auto-paste")
+                                    .font(KoeTheme.monoSmall)
+                                    .foregroundColor(KoeTheme.washiPaper)
+                                Text("Paste into active field after transcription")
+                                    .font(KoeTheme.monoTiny)
+                                    .foregroundColor(KoeTheme.washiMuted)
+                            }
+                            Spacer()
+                            Toggle("", isOn: $autoPasteEnabled)
+                                .toggleStyle(.switch)
+                                .tint(KoeTheme.vermilion)
+                        }
                     }
                 }
 
