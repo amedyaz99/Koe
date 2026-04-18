@@ -193,7 +193,7 @@ struct RecordingGlowModifier: ViewModifier {
 class HUDWindow: NSWindow {
     init() {
         super.init(
-            contentRect: NSRect(x: 0, y: 0, width: 340, height: 72),
+            contentRect: NSRect(x: 0, y: 0, width: 210, height: 34),
             styleMask: [.borderless],
             backing: .buffered,
             defer: false
@@ -224,8 +224,8 @@ class HUDWindow: NSWindow {
     private func position() {
         guard let screen = NSScreen.main else { return }
         let frame = screen.visibleFrame
-        let x = frame.midX - 170
-        let y = frame.minY + 80
+        let x = frame.maxX - 210 - 16
+        let y = frame.maxY - 34 - 16
         setFrameOrigin(NSPoint(x: x, y: y))
     }
 }
