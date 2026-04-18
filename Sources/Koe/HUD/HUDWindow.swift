@@ -7,6 +7,7 @@ enum HUDState: Equatable {
     case recording
     case transcribing
     case done(text: String)
+    case pasted(text: String)
     case error
 }
 
@@ -49,7 +50,7 @@ struct HUDView: View {
             BlinkingDot()
         case .transcribing:
             BouncingDots()
-        case .done:
+        case .done, .pasted:
             Text("✓")
                 .font(.system(size: 14, weight: .semibold))
                 .foregroundStyle(Color(red: 0.235, green: 0.722, blue: 0.353))
@@ -74,6 +75,10 @@ struct HUDView: View {
             Text("copied")
                 .font(.system(size: 11, weight: .regular, design: .monospaced))
                 .foregroundStyle(Color.white)
+        case .pasted:
+            Text("pasted")
+                .font(.system(size: 11, weight: .regular, design: .monospaced))
+                .foregroundStyle(Color.white)
         case .error:
             Text("error")
                 .font(.system(size: 11, weight: .regular, design: .monospaced))
@@ -85,7 +90,7 @@ struct HUDView: View {
         switch holder.hudState {
         case .recording:    return Color(red: 0.863, green: 0.2, blue: 0.2)
         case .transcribing: return Color(red: 0.392, green: 0.471, blue: 0.878)
-        case .done:         return Color(red: 0.235, green: 0.722, blue: 0.353)
+        case .done, .pasted: return Color(red: 0.235, green: 0.722, blue: 0.353)
         case .error:        return Color(red: 0.863, green: 0.2, blue: 0.2)
         }
     }
