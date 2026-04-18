@@ -26,10 +26,7 @@ struct HUDView: View {
             Color.clear // fills the 300x44 window transparently
             ZStack {
                 RoundedRectangle(cornerRadius: 15, style: .continuous)
-                    .fill(Color(red: 0.067, green: 0.067, blue: 0.067))
-
-                RoundedRectangle(cornerRadius: 15, style: .continuous)
-                    .strokeBorder(glowColor.opacity(0.35), lineWidth: 1)
+                    .fill(Color.black)
 
                 HStack(spacing: 10) {
                     leadingView
@@ -74,15 +71,15 @@ struct HUDView: View {
         case .transcribing:
             Text("processing")
                 .font(.system(size: 10, weight: .regular, design: .monospaced))
-                .foregroundStyle(Color.white.opacity(0.35))
+                .foregroundStyle(Color.white)
         case .done:
             Text("copied")
                 .font(.system(size: 11, weight: .regular, design: .monospaced))
-                .foregroundStyle(Color.white.opacity(0.6))
+                .foregroundStyle(Color.white)
         case .error:
             Text("error")
                 .font(.system(size: 11, weight: .regular, design: .monospaced))
-                .foregroundStyle(Color.white.opacity(0.6))
+                .foregroundStyle(Color.white)
         }
     }
 
@@ -98,18 +95,18 @@ struct HUDView: View {
     private var glowOpacity: Double {
         switch holder.hudState {
         case .recording:    return 0   // handled by RecordingGlowModifier
-        case .transcribing: return 0.3
-        case .done:         return 0.3
-        case .error:        return 0.3
+        case .transcribing: return 0.08
+        case .done:         return 0.08
+        case .error:        return 0.08
         }
     }
 
     private var glowRadius: CGFloat {
         switch holder.hudState {
         case .recording:    return 0
-        case .transcribing: return 10
-        case .done:         return 10
-        case .error:        return 10
+        case .transcribing: return 8
+        case .done:         return 8
+        case .error:        return 8
         }
     }
 }
@@ -185,9 +182,9 @@ struct RecordingGlowModifier: ViewModifier {
         content
             .shadow(
                 color: isRecording
-                    ? Color(red: 0.863, green: 0.2, blue: 0.2).opacity(glowing ? 0.55 : 0.3)
+                    ? Color(red: 0.863, green: 0.2, blue: 0.2).opacity(glowing ? 0.15 : 0.05)
                     : .clear,
-                radius: glowing ? 14 : 8
+                radius: glowing ? 10 : 6
             )
             .onAppear {
                 guard isRecording else { return }
