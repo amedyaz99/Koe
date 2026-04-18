@@ -17,89 +17,174 @@ struct HUDView: View {
 
     var body: some View {
         ZStack {
-            // Background
-            ContinuousRoundedRectangle(cornerRadius: 18)
-                .fill(KoeTheme.sumiInk)
-                .shadow(color: .black.opacity(0.3), radius: 10, x: 0, y: 4)
+            RoundedRectangle(cornerRadius: 17, style: .continuous)
+                .fill(Color(red: 0.067, green: 0.067, blue: 0.067))
 
-            // Accent Glow
-            if let tint = tintColor {
-                ContinuousRoundedRectangle(cornerRadius: 18)
-                    .stroke(tint.opacity(0.3), lineWidth: 1)
+            RoundedRectangle(cornerRadius: 17, style: .continuous)
+                .strokeBorder(glowColor.opacity(0.35), lineWidth: 1)
+
+            HStack(spacing: 10) {
+                leadingView
+                trailingView
             }
-
-            // Content
-            HStack(spacing: 16) {
-                iconView
-                    .frame(width: 32, height: 32)
-
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(title)
-                        .font(KoeTheme.monoSmall)
-                        .foregroundColor(KoeTheme.washiPaper)
-
-                    Text(subtitle)
-                        .font(KoeTheme.mainSmall)
-                        .foregroundColor(KoeTheme.washiMuted)
-                        .lineLimit(1)
-                        .truncationMode(.tail)
-                }
-
-                Spacer()
-            }
-            .padding(.horizontal, 20)
+            .padding(.horizontal, 14)
         }
-        .frame(width: 340, height: 72)
+        .frame(width: 210, height: 34)
+        .shadow(color: glowColor.opacity(glowOpacity), radius: glowRadius)
+        .modifier(RecordingGlowModifier(isRecording: {
+            if case .recording = state { return true }
+            return false
+        }()))
     }
 
     @ViewBuilder
-    private var iconView: some View {
+    private var leadingView: some View {
         switch state {
         case .recording:
-            WaveformView(barWidth: 3, minHeight: 8, maxHeight: 22, color: KoeTheme.vermilion)
-                .frame(width: 28)
+            BlinkingDot()
         case .transcribing:
-            ProgressView()
-                .scaleEffect(0.8)
-                .tint(KoeTheme.transcribingColor)
+            BouncingDots()
         case .done:
-            InkanStamp(size: 28)
+            Text("✓")
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundStyle(Color(red: 0.235, green: 0.722, blue: 0.353))
+                .transition(.scale.combined(with: .opacity))
         case .error:
-            Circle()
-                .fill(KoeTheme.errorColor)
-                .overlay(
-                    Text("!")
-                        .font(.system(size: 14, weight: .bold))
-                        .foregroundColor(.white)
-                )
+            Text("✗")
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundStyle(Color(red: 0.91, green: 0.2, blue: 0.2))
         }
     }
 
-    private var title: String {
+    @ViewBuilder
+    private var trailingView: some View {
         switch state {
-        case .recording:    return "RECORDING"
-        case .transcribing: return "PROCESSING"
-        case .done:         return "COPIED"
-        case .error:        return "ERROR"
+        case .recording:
+            CompactWaveformView()
+        case .transcribing:
+            Text("processing")
+                .font(.system(size: 10, weight: .regular, design: .monospaced))
+                .foregroundStyle(Color.white.opacity(0.35))
+        case .done:
+            Text("copied")
+                .font(.system(size: 11, weight: .regular, design: .monospaced))
+                .foregroundStyle(Color.white.opacity(0.6))
+        case .error:
+            Text("error")
+                .font(.system(size: 11, weight: .regular, design: .monospaced))
+                .foregroundStyle(Color.white.opacity(0.6))
         }
     }
 
-    private var subtitle: String {
+    private var glowColor: Color {
         switch state {
-        case .recording:         return "Listening for voice..."
-        case .transcribing:      return "Converting to text..."
-        case .done(let text):    return text
-        case .error:             return "Transcription failed"
+        case .recording:    return Color(red: 0.863, green: 0.2, blue: 0.2)
+        case .transcribing: return Color(red: 0.392, green: 0.471, blue: 0.878)
+        case .done:         return Color(red: 0.235, green: 0.722, blue: 0.353)
+        case .error:        return Color(red: 0.863, green: 0.2, blue: 0.2)
         }
     }
 
-    private var tintColor: Color? {
+    private var glowOpacity: Double {
         switch state {
-        case .recording:    return KoeTheme.vermilion
-        case .transcribing: return KoeTheme.transcribingColor
-        case .done:         return KoeTheme.gold
-        case .error:        return KoeTheme.errorColor
+        case .recording:    return 0   // handled by RecordingGlowModifier
+        case .transcribing: return 0.3
+        case .done:         return 0.3
+        case .error:        return 0.3
         }
+    }
+
+    private var glowRadius: CGFloat {
+        switch state {
+        case .recording:    return 0
+        case .transcribing: return 10
+        case .done:         return 10
+        case .error:        return 10
+        }
+    }
+}
+
+struct BlinkingDot: View {
+    @State private var visible = true
+
+    var body: some View {
+        Circle()
+            .fill(Color(red: 0.91, green: 0.2, blue: 0.2))
+            .frame(width: 7, height: 7)
+            .opacity(visible ? 1 : 0.15)
+            .onAppear {
+                withAnimation(.easeInOut(duration: 0.5).repeatForever()) {
+                    visible.toggle()
+                }
+            }
+    }
+}
+
+struct BouncingDots: View {
+    @State private var activeIndex = 0
+    private let timer = Timer.publish(every: 0.3, on: .main, in: .common).autoconnect()
+
+    var body: some View {
+        HStack(spacing: 4) {
+            ForEach(0..<3, id: \.self) { i in
+                Circle()
+                    .fill(Color(red: 0.482, green: 0.561, blue: 0.878))
+                    .frame(width: 5, height: 5)
+                    .opacity(activeIndex == i ? 0.9 : 0.2)
+                    .animation(.easeInOut(duration: 0.2), value: activeIndex)
+            }
+        }
+        .onReceive(timer) { _ in
+            activeIndex = (activeIndex + 1) % 3
+        }
+    }
+}
+
+struct CompactWaveformView: View {
+    private let barCount = 12
+    private let delays: [Double] = [0, 0.06, 0.12, 0.18, 0.24, 0.30, 0.36, 0.42, 0.48, 0.54, 0.60, 0.66]
+    private let maxHeights: [CGFloat] = [5, 13, 20, 9, 16, 7, 18, 11, 15, 6, 19, 8]
+
+    @State private var animate = false
+
+    var body: some View {
+        HStack(spacing: 2) {
+            ForEach(0..<barCount, id: \.self) { i in
+                RoundedRectangle(cornerRadius: 1.5)
+                    .fill(Color(red: 0.91, green: 0.627, blue: 0.125))
+                    .frame(width: 2.5, height: animate ? maxHeights[i] : maxHeights[i] * 0.3)
+                    .animation(
+                        .easeInOut(duration: 0.48)
+                        .repeatForever(autoreverses: true)
+                        .delay(delays[i]),
+                        value: animate
+                    )
+            }
+        }
+        .frame(height: 20)
+        .onAppear { animate = true }
+    }
+}
+
+// HUD is recreated fresh per state, so onAppear is sufficient — no onChange needed
+struct RecordingGlowModifier: ViewModifier {
+    let isRecording: Bool
+    @State private var glowing = false
+
+    func body(content: Content) -> some View {
+        content
+            .shadow(
+                color: isRecording
+                    ? Color(red: 0.863, green: 0.2, blue: 0.2).opacity(glowing ? 0.55 : 0.3)
+                    : .clear,
+                radius: glowing ? 14 : 8
+            )
+            .onAppear {
+                guard isRecording else { return }
+                withAnimation(.easeInOut(duration: 1.4).repeatForever(autoreverses: true)) {
+                    glowing = true
+                }
+            }
     }
 }
 
