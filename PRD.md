@@ -35,7 +35,7 @@ Solo developers, writers, medical students, researchers — power users who live
 The app runs silently. Only presence: a mic icon in the system menu bar. No Dock icon. Zero visual footprint.
 
 ### State 2 — HUD (hotkey triggered)
-Press ⌥Space from any app. A floating pill appears at the bottom of the screen. User speaks. Press ⌥Space again. HUD transitions through Recording → Transcribing → Copied. Auto-dismisses. User presses ⌘V anywhere.
+Press ⌥K from any app. A floating pill appears at the bottom of the screen. User speaks. Press ⌥K again. HUD transitions through Recording → Transcribing → Copied. Auto-dismisses. User presses ⌘V anywhere.
 
 ### State 3 — Main Window (on demand)
 Opened by clicking the menu bar icon or via Spotlight. A standard macOS window with three tabs:
@@ -51,7 +51,7 @@ States 2 and 3 can coexist. Closing the window does not quit the app.
 
 ### Flow A — Quick capture (State 2)
 ```
-Any app → ⌥Space → HUD (waveform) → speak → ⌥Space → HUD (transcribing)
+Any app → ⌥K → HUD (waveform) → speak → ⌥K → HUD (transcribing)
 → HUD (copied) → auto-dismiss → ⌘V anywhere
 ```
 
@@ -75,7 +75,7 @@ Click menu bar icon → Main window → History tab → tap any entry → copies
 | Feature | State | Description |
 |---|---|---|
 | Menu bar icon | 1 | Mic icon, no Dock presence |
-| Global hotkey | 2 | ⌥Space — toggle recording system-wide |
+| Global hotkey | 2 | ⌥K — toggle recording system-wide |
 | HUD overlay | 2 | Floating pill, bottom-center, 4 states |
 | Waveform animation | 2, 3 | Animated amber bars during recording |
 | Local transcription | 2, 3 | whisper.cpp subprocess, base.en model |
@@ -148,7 +148,7 @@ Click menu bar icon → Main window → History tab → tap any entry → copies
 - No Windows or Linux support
 - No iOS companion app
 - No iCloud sync
-- No custom hotkey UI (hardcoded ⌥Space)
+- No custom hotkey UI (hardcoded ⌥K)
 - No model download UI (user installs manually)
 
 ---

@@ -10,94 +10,97 @@ struct SettingsTab: View {
     var body: some View {
         ScrollView(.vertical, showsIndicators: false) {
             VStack(spacing: 0) {
-                archivalSection(
+                settingsSection(
                     heading: "Hotkey",
                     japanese: "ショートカット"
                 ) {
-                    DottedLeaderRow(label: "Trigger") {
+                    HStack {
+                        Text("Trigger")
+                            .font(KoeTheme.monoSmall)
+                            .foregroundColor(KoeTheme.washiPaper)
+                        
+                        Spacer()
+                        
                         HotkeyBadge(
                             config: currentConfig,
                             isRecording: isRecordingHotkey,
                             onTap: toggleHotkeyRecording
                         )
                     }
+                    
                     if isRecordingHotkey {
                         Text("Press a key combination, or Escape to cancel.")
                             .font(KoeTheme.monoTiny)
-                            .foregroundColor(KoeTheme.stone)
+                            .foregroundColor(KoeTheme.washiMuted)
                             .padding(.top, 4)
                     }
                 }
 
-                archivalSection(
+                settingsSection(
                     heading: "Transcription",
                     japanese: "文字起こし"
                 ) {
-                    DottedLeaderRow(label: "Model") {
-                        Text("base.en")
-                            .font(KoeTheme.monoSmall)
-                            .foregroundColor(KoeTheme.vermilion)
-                    }
-                    DottedLeaderRow(label: "Engine") {
-                        Text("whisper.cpp")
-                            .font(KoeTheme.monoSmall)
-                            .foregroundColor(KoeTheme.stone)
-                    }
-                    DottedLeaderRow(label: "Language") {
-                        Text("auto")
-                            .font(KoeTheme.monoSmall)
-                            .foregroundColor(KoeTheme.stone)
+                    VStack(spacing: 12) {
+                        settingsRow(label: "Model", value: "base.en", valueColor: KoeTheme.vermilion)
+                        settingsRow(label: "Engine", value: "whisper.cpp")
+                        settingsRow(label: "Language", value: "auto")
                     }
                 }
 
-                archivalSection(
+                settingsSection(
                     heading: "System",
                     japanese: "システム"
                 ) {
-                    DottedLeaderRow(label: "Launch at login") {
-                        ArchivalToggle(isOn: $launchAtLogin)
+                    HStack {
+                        Text("Launch at login")
+                            .font(KoeTheme.monoSmall)
+                            .foregroundColor(KoeTheme.washiPaper)
+                        
+                        Spacer()
+                        
+                        Toggle("", isOn: $launchAtLogin)
+                            .toggleStyle(.switch)
+                            .tint(KoeTheme.vermilion)
                     }
                 }
 
-                archivalSection(
+                settingsSection(
                     heading: "About",
                     japanese: "について"
                 ) {
                     HStack(alignment: .bottom) {
-                        VStack(alignment: .leading, spacing: 4) {
-                            HStack(alignment: .lastTextBaseline, spacing: 1) {
-                                Text("koe")
-                                    .font(.custom("HiraMinProN-W3", size: 32))
-                                    .foregroundColor(KoeTheme.ink)
-                                    .tracking(-0.5)
+                        VStack(alignment: .leading, spacing: 8) {
+                            HStack(alignment: .lastTextBaseline, spacing: 2) {
+                                Text("Koe")
+                                    .font(.system(size: 32, weight: .light))
+                                    .foregroundColor(KoeTheme.washiPaper)
                                 Text(".")
-                                    .font(.custom("HiraMinProN-W3", size: 32))
+                                    .font(.system(size: 32, weight: .light))
                                     .foregroundColor(KoeTheme.vermilion)
-                                    .tracking(-0.5)
                             }
                             Text("voice → clipboard")
                                 .font(KoeTheme.monoTiny)
-                                .foregroundColor(KoeTheme.stone)
-                                .tracking(0.8)
+                                .foregroundColor(KoeTheme.washiMuted)
+                                .tracking(1.0)
                         }
 
                         Spacer()
 
-                        VStack(alignment: .trailing, spacing: 6) {
+                        VStack(alignment: .trailing, spacing: 8) {
                             Text("v1.0.0")
                                 .font(KoeTheme.monoTiny)
-                                .foregroundColor(KoeTheme.stoneL)
+                                .foregroundColor(KoeTheme.washiMuted)
 
-                            InkanStamp(size: 34)
+                            InkanStamp(size: 32)
                         }
                     }
-                    .padding(.top, 4)
+                    .padding(.top, 8)
                 }
             }
-            .padding(.bottom, 24)
+            .padding(.bottom, 32)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(KoeTheme.ivory)
+        .background(KoeTheme.sumiInk)
         .onReceive(NotificationCenter.default.publisher(for: .hotkeyConfigChanged)) { _ in
             currentConfig = HotkeyConfig.current
         }
@@ -106,44 +109,43 @@ struct SettingsTab: View {
         }
     }
 
-    // MARK: Section builder
+    private func settingsRow(label: String, value: String, valueColor: Color = KoeTheme.washiMuted) -> some View {
+        HStack {
+            Text(label)
+                .font(KoeTheme.monoSmall)
+                .foregroundColor(KoeTheme.washiPaper)
+            Spacer()
+            Text(value)
+                .font(KoeTheme.monoSmall)
+                .foregroundColor(valueColor)
+        }
+    }
 
     @ViewBuilder
-    private func archivalSection<Content: View>(
+    private func settingsSection<Content: View>(
         heading: String,
         japanese: String,
         @ViewBuilder content: () -> Content
     ) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
-            // Section heading
-            HStack(spacing: 8) {
+        VStack(alignment: .leading, spacing: 16) {
+            HStack(spacing: 12) {
                 Text(heading.uppercased())
-                    .font(KoeTheme.serifTiny)
-                    .foregroundColor(KoeTheme.stone)
-                    .tracking(1.4)
+                    .font(KoeTheme.monoTiny)
+                    .foregroundColor(KoeTheme.washiMuted)
+                    .tracking(2.0)
 
                 Text("— \(japanese)")
-                    .font(KoeTheme.serifTiny)
-                    .foregroundColor(KoeTheme.vermilion.opacity(0.4))
-
-                // Gradient rule after heading
-                ArchivalDivider()
+                    .font(.system(size: 10))
+                    .foregroundColor(KoeTheme.vermilion.opacity(0.6))
+                
+                Spacer()
             }
 
             content()
         }
-        .padding(.horizontal, 22)
-        .padding(.top, 18)
-        .padding(.bottom, 4)
-        .overlay(
-            Rectangle()
-                .fill(KoeTheme.ink.opacity(0.06))
-                .frame(height: 1),
-            alignment: .bottom
-        )
+        .padding(.horizontal, 24)
+        .padding(.top, 32)
     }
-
-    // MARK: Hotkey recording
 
     private func toggleHotkeyRecording() {
         isRecordingHotkey ? stopHotkeyRecording(cancelled: true) : startHotkeyRecording()
@@ -151,7 +153,7 @@ struct SettingsTab: View {
 
     private func startHotkeyRecording() {
         isRecordingHotkey = true
-        monitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [self] event in
+        monitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { event in
             if event.keyCode == 53 {
                 stopHotkeyRecording(cancelled: true)
                 return nil
@@ -173,8 +175,6 @@ struct SettingsTab: View {
     }
 }
 
-// MARK: - Hotkey Badge
-
 private struct HotkeyBadge: View {
     let config: HotkeyConfig
     let isRecording: Bool
@@ -182,50 +182,20 @@ private struct HotkeyBadge: View {
 
     var body: some View {
         Button(action: onTap) {
-            Text(isRecording ? "recording…" : config.displayString)
+            Text(isRecording ? "RECORDING…" : config.displayString.uppercased())
                 .font(KoeTheme.monoSmall)
-                .foregroundColor(isRecording ? KoeTheme.stone : KoeTheme.vermilion)
-                .padding(.horizontal, 8)
-                .padding(.vertical, 3)
+                .foregroundColor(isRecording ? KoeTheme.vermilion : KoeTheme.washiPaper)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 4)
                 .background(
-                    RoundedRectangle(cornerRadius: 4, style: .continuous)
-                        .fill(KoeTheme.ivoryDeep)
+                    ContinuousRoundedRectangle(cornerRadius: 6)
+                        .fill(KoeTheme.sumiInkLight)
                         .overlay(
-                            RoundedRectangle(cornerRadius: 4, style: .continuous)
-                                .strokeBorder(
-                                    isRecording
-                                        ? KoeTheme.stone.opacity(0.3)
-                                        : KoeTheme.vermilion.opacity(0.25),
-                                    lineWidth: 1
-                                )
+                            ContinuousRoundedRectangle(cornerRadius: 6)
+                                .stroke(isRecording ? KoeTheme.vermilion : KoeTheme.washiMuted.opacity(0.3), lineWidth: 1)
+
                         )
                 )
-        }
-        .buttonStyle(.plain)
-    }
-}
-
-// MARK: - Archival Toggle
-
-private struct ArchivalToggle: View {
-    @Binding var isOn: Bool
-
-    var body: some View {
-        Button(action: { isOn.toggle() }) {
-            HStack(spacing: 6) {
-                // Track
-                ZStack(alignment: isOn ? .trailing : .leading) {
-                    Capsule()
-                        .fill(isOn ? KoeTheme.ink : KoeTheme.stoneL.opacity(0.4))
-                        .frame(width: 32, height: 18)
-                    Circle()
-                        .fill(KoeTheme.ivory)
-                        .frame(width: 13, height: 13)
-                        .shadow(color: .black.opacity(0.15), radius: 2, x: 0, y: 1)
-                        .padding(2.5)
-                }
-                .animation(.spring(response: 0.25, dampingFraction: 0.8), value: isOn)
-            }
         }
         .buttonStyle(.plain)
     }

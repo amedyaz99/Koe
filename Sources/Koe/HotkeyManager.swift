@@ -4,11 +4,13 @@ import Foundation
 @MainActor
 final class HotkeyManager {
     private let onTrigger: () -> Void
+    private let onEscape: (() -> Void)?
     private var eventTap: CFMachPort?
     private var runLoopSource: CFRunLoopSource?
 
-    init(onTrigger: @escaping () -> Void) {
+    init(onTrigger: @escaping () -> Void, onEscape: (() -> Void)? = nil) {
         self.onTrigger = onTrigger
+        self.onEscape = onEscape
 
         NotificationCenter.default.addObserver(
             self,
@@ -89,6 +91,11 @@ final class HotkeyManager {
 
             let keyCode = event.getIntegerValueField(.keyboardEventKeycode)
             let modifiers = event.flags.intersection([.maskAlternate, .maskCommand, .maskControl, .maskShift])
+
+            if keyCode == 53 { // Escape
+                manager.onEscape?()
+                return Unmanaged.passUnretained(event)
+            }
 
             guard keyCode == manager.targetKeyCode, modifiers == manager.targetModifiers else {
                 return Unmanaged.passUnretained(event)

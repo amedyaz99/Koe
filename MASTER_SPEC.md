@@ -363,7 +363,7 @@ class HotkeyManager {
 1. `AXIsProcessTrustedWithOptions([kAXTrustedCheckOptionPrompt: true])` — triggers system dialog if needed
 2. Create CGEvent tap: `.cgSessionEventTap`, `.headInsertEventTap`, `.defaultTap`, keyDown only
 3. Callback (C function pointer — use `Unmanaged.passUnretained(self).toOpaque()` as userInfo):
-   - Check `keyCode == 49` (Space) AND `flags.intersection([.maskAlternate, .maskCommand, .maskControl, .maskShift]) == .maskAlternate`
+   - Check `keyCode == 40` (K) AND `flags.intersection([.maskAlternate, .maskCommand, .maskControl, .maskShift]) == .maskAlternate`
    - Match: call `onTrigger()`, return `nil` (consume event)
    - No match: return `Unmanaged.passUnretained(event)`
 4. `CFRunLoopAddSource(CFRunLoopGetCurrent(), source, .commonModes)`
@@ -373,8 +373,8 @@ class HotkeyManager {
 
 **Verification:**
 - Grant Accessibility in System Settings when prompted
-- Press ⌥Space → console logs the trigger
-- Press Space alone → no trigger, normal typing
+- Press ⌥K → console logs the trigger
+- Press K alone → no trigger, normal typing
 - Press ⌘Space → Spotlight opens normally (event not consumed)
 
 ---
@@ -408,7 +408,7 @@ private var isTranscribing = false   // guard against double-tap during transcri
 - `NSStatusItem` with `.squareLength`
 - Button image: `mic.fill` SF Symbol, template image
 - Left-click action: open main window (Phase 9)
-- Right-click menu: "Koe" (disabled), "Open Koe…", separator, "Hotkey: ⌥Space" (disabled), separator, "Quit Koe"
+- Right-click menu: "Koe" (disabled), "Open Koe…", separator, "Hotkey: ⌥K" (disabled), separator, "Quit Koe"
 
 **`toggleRecording()`:**
 - Dispatch to main
@@ -439,9 +439,9 @@ private var isTranscribing = false   // guard against double-tap during transcri
 8. Always: `try? FileManager.default.removeItem(at: audioURL)`
 
 **Verification (State 2 end-to-end):**
-- [ ] ⌥Space → amber waveform HUD appears
+- [ ] ⌥K → amber waveform HUD appears
 - [ ] Speak 5–10 seconds
-- [ ] ⌥Space → "Transcribing…" HUD
+- [ ] ⌥K → "Transcribing…" HUD
 - [ ] "Copied" HUD with text preview
 - [ ] ⌘V in any app → correct text
 - [ ] HUD dismisses after 2s
@@ -542,7 +542,7 @@ struct HistoryTab: View {
 ```
 
 `HistoryRow`: transcript text (`.lineLimit(2)`) + relative date in muted monospace.
-`EmptyHistoryView`: centered text, muted, "No transcripts yet.\nPress ⌥Space anywhere to start."
+`EmptyHistoryView`: centered text, muted, "No transcripts yet.\nPress ⌥K anywhere to start."
 
 ### Step 9.5 — SettingsTab.swift
 
@@ -554,7 +554,7 @@ struct SettingsTab: View {
         Form {
             Section("Hotkey") {
                 LabeledContent("Trigger") {
-                    Text("⌥ Space")
+                    Text("⌥ K")
                         .font(.system(.body, design: .monospaced))
                         .foregroundStyle(.secondary)
                 }
@@ -651,7 +651,7 @@ Phase 3   TranscriptStore — shared history model
 Phase 4   HUD Window — State 2 visual shell, all 4 states, no recording yet
 Phase 5   AudioRecorder — mic capture to .wav
 Phase 6   WhisperTranscriber — subprocess, returns cleaned text
-Phase 7   HotkeyManager — global ⌥Space
+Phase 7   HotkeyManager — global ⌥K
 Phase 8   State 2 orchestration — full HUD recording flow end-to-end
 Phase 9   State 3 main window — three tabs (Record, History, Settings)
 Phase 10  Polish — edge cases, guards, error flows

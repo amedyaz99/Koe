@@ -17,40 +17,37 @@ struct HUDView: View {
 
     var body: some View {
         ZStack {
-            // Base material
-            RoundedRectangle(cornerRadius: 22, style: .continuous)
-                .fill(.ultraThinMaterial)
+            // Background
+            ContinuousRoundedRectangle(cornerRadius: 18)
+                .fill(KoeTheme.sumiInk)
+                .shadow(color: .black.opacity(0.3), radius: 10, x: 0, y: 4)
 
-            // State tint
+            // Accent Glow
             if let tint = tintColor {
-                RoundedRectangle(cornerRadius: 22, style: .continuous)
-                    .fill(tint.opacity(tintOpacity))
+                ContinuousRoundedRectangle(cornerRadius: 18)
+                    .stroke(tint.opacity(0.3), lineWidth: 1)
             }
 
-            // Border
-            RoundedRectangle(cornerRadius: 22, style: .continuous)
-                .strokeBorder(borderColor, lineWidth: 0.5)
-
             // Content
-            HStack(spacing: 14) {
+            HStack(spacing: 16) {
                 iconView
-                    .frame(width: 28, height: 28)
+                    .frame(width: 32, height: 32)
 
-                VStack(alignment: .leading, spacing: 3) {
+                VStack(alignment: .leading, spacing: 4) {
                     Text(title)
-                        .font(.system(size: 12, weight: .medium, design: .monospaced))
-                        .foregroundStyle(.primary)
+                        .font(KoeTheme.monoSmall)
+                        .foregroundColor(KoeTheme.washiPaper)
 
                     Text(subtitle)
-                        .font(.system(size: 10, weight: .regular, design: .monospaced))
-                        .foregroundStyle(.secondary)
+                        .font(KoeTheme.mainSmall)
+                        .foregroundColor(KoeTheme.washiMuted)
                         .lineLimit(1)
                         .truncationMode(.tail)
                 }
 
                 Spacer()
             }
-            .padding(.horizontal, 18)
+            .padding(.horizontal, 20)
         }
         .frame(width: 340, height: 72)
     }
@@ -66,66 +63,42 @@ struct HUDView: View {
                 .scaleEffect(0.8)
                 .tint(KoeTheme.transcribingColor)
         case .done:
-            Circle()
-                .fill(KoeTheme.doneColor)
-                .overlay(
-                    Image(systemName: "checkmark")
-                        .font(.system(size: 12, weight: .semibold))
-                        .foregroundStyle(.white)
-                )
+            InkanStamp(size: 28)
         case .error:
             Circle()
                 .fill(KoeTheme.errorColor)
                 .overlay(
                     Text("!")
                         .font(.system(size: 14, weight: .bold))
-                        .foregroundStyle(.white)
+                        .foregroundColor(.white)
                 )
         }
     }
 
     private var title: String {
         switch state {
-        case .recording:    return "Buffer: Active"
-        case .transcribing: return "Buffer: Processing"
-        case .done:         return "Copied to clipboard"
-        case .error:        return "Transcription failed"
+        case .recording:    return "RECORDING"
+        case .transcribing: return "PROCESSING"
+        case .done:         return "COPIED"
+        case .error:        return "ERROR"
         }
     }
 
     private var subtitle: String {
         switch state {
-        case .recording:         return "● REC  — press ⌥Space to stop"
-        case .transcribing:      return "◌  Processing audio"
+        case .recording:         return "Listening for voice..."
+        case .transcribing:      return "Converting to text..."
         case .done(let text):    return text
-        case .error:             return "Check whisper-cli is installed"
+        case .error:             return "Transcription failed"
         }
     }
 
     private var tintColor: Color? {
         switch state {
         case .recording:    return KoeTheme.vermilion
-        case .transcribing: return nil
-        case .done:         return KoeTheme.doneColor
+        case .transcribing: return KoeTheme.transcribingColor
+        case .done:         return KoeTheme.gold
         case .error:        return KoeTheme.errorColor
-        }
-    }
-
-    private var tintOpacity: Double {
-        switch state {
-        case .recording:    return 0.06
-        case .transcribing: return 0
-        case .done:         return 0.06
-        case .error:        return 0.05
-        }
-    }
-
-    private var borderColor: Color {
-        switch state {
-        case .recording:    return KoeTheme.vermilion.opacity(0.25)
-        case .transcribing: return Color.black.opacity(0.08)
-        case .done:         return KoeTheme.doneColor.opacity(0.2)
-        case .error:        return KoeTheme.errorColor.opacity(0.15)
         }
     }
 }
@@ -150,7 +123,7 @@ class HUDWindow: NSWindow {
 
     func show(state: HUDState) {
         DispatchQueue.main.async { [weak self] in
-            guard let self else { return }
+            guard let self = self else { return }
             self.contentView = NSHostingView(rootView: HUDView(state: state))
             self.position()
             self.makeKeyAndOrderFront(nil)
@@ -167,7 +140,7 @@ class HUDWindow: NSWindow {
         guard let screen = NSScreen.main else { return }
         let frame = screen.visibleFrame
         let x = frame.midX - 170
-        let y = max(frame.minY + 60, frame.minY + 20)
+        let y = frame.minY + 80
         setFrameOrigin(NSPoint(x: x, y: y))
     }
 }

@@ -99,15 +99,15 @@ Closing State 3 window does NOT quit the app — hides window, State 1 resumes.
 ### General
 - One responsibility per file. No cross-contamination.
 - No force unwraps (`!`) except `Bundle.main` guaranteed values.
-- No `DispatchQueue.main.sync` — always `.async`.
 - All UI updates must be on main thread.
-- Errors always surface to user. Never silently swallow.
+- Surface errors to user. Never silently swallow.
 
 ### Swift specifics
 - `[weak self]` in all closures with async dispatch.
 - `guard let` over `if let` for early exits.
 - All `Process` calls on `DispatchQueue.global(qos: .userInitiated)`.
 - `AVAudioFile` for recording — never raw buffer writes to disk.
+- Always use `DispatchQueue.main.async` for UI updates, never `.sync`.
 
 ### Naming conventions
 - HUD state enum: `HUDState` with cases `.recording`, `.transcribing`, `.done(text:)`, `.error`
@@ -272,65 +272,21 @@ Quit Koe
 - Never make HTTP/network calls
 - Never retain audio files after transcription completes
 - Never store more than 20 transcript entries
-- Never add Swift Package dependencies without asking
-- Never use `DispatchQueue.main.sync`
+- Discuss new Swift Package dependencies before adding (avoid unvetted deps)
 - Never quit the app when main window is closed — hide the window only
 - Never show the Dock icon — `LSUIElement = YES` always
 
 ---
 
-## Build & Run (Warp, no Xcode GUI)
+## Build & Run
 
-### Prerequisites
-```bash
-xcode-select --install        # Xcode CLI tools
-swift --version               # confirm 5.9+
-/usr/local/bin/whisper-cli --version
-ls ~/Library/Application\ Support/Koe/ggml-base.en.bin
-```
-
-### Commands
-```bash
-cd ~/Developer/Koe
-swift build                   # debug build
-swift run                     # run
-swift build -c release        # release build
-```
-
-### Common issues
-
-| Symptom | Cause | Fix |
-|---|---|---|
-| Hotkey does nothing | Accessibility not granted | System Settings → Privacy → Accessibility |
-| HUD never appears | Event tap failed | Check Console.app for `Koe` logs |
-| Transcription errors | whisper-cli not found | Confirm binary at `/usr/local/bin/whisper-cli` |
-| Empty transcription | Model not found | Confirm model at `~/Library/Application Support/Koe/` |
-| App shows in Dock | `LSUIElement` missing | Add `LSUIElement = YES` to Info.plist |
-| Window won't open | Weak reference released | Confirm AppDelegate holds strong ref to `MainWindowController` |
+See `BUILD.md` for build commands, prerequisites, and troubleshooting.
 
 ---
 
-## Testing Checklist (manual, pre-commit)
+## Testing Checklist
 
-**State 2 — HUD:**
-- [ ] ⌥Space starts recording — amber waveform HUD appears
-- [ ] ⌥Space stops — transitions to "Transcribing…"
-- [ ] Done state shows text preview — ⌘V pastes correctly
-- [ ] HUD dismisses after 2s
-- [ ] No temp files in `/tmp`
-
-**State 3 — Main window:**
-- [ ] Menu bar click opens window
-- [ ] Spotlight search "Koe" opens window
-- [ ] Record tab mic button records + inline waveform shows
-- [ ] History tab shows new entry after each recording
-- [ ] Tapping history row copies to clipboard
-- [ ] Settings tab renders correctly
-- [ ] Closing window does NOT quit — menu bar icon remains
-
-**Always:**
-- [ ] App not in Dock
-- [ ] Quit from menu bar works
+See `TESTING.md` for pre-commit manual testing checklist.
 
 ---
 
