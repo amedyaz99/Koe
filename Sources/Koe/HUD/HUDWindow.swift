@@ -17,10 +17,10 @@ struct HUDView: View {
 
     var body: some View {
         ZStack {
-            RoundedRectangle(cornerRadius: 17, style: .continuous)
+            RoundedRectangle(cornerRadius: 15, style: .continuous)
                 .fill(Color(red: 0.067, green: 0.067, blue: 0.067))
 
-            RoundedRectangle(cornerRadius: 17, style: .continuous)
+            RoundedRectangle(cornerRadius: 15, style: .continuous)
                 .strokeBorder(glowColor.opacity(0.35), lineWidth: 1)
 
             HStack(spacing: 10) {
@@ -29,7 +29,7 @@ struct HUDView: View {
             }
             .padding(.horizontal, 14)
         }
-        .frame(width: 210, height: 34)
+        .frame(width: 170, height: 30)
         .shadow(color: glowColor.opacity(glowOpacity), radius: glowRadius)
         .modifier(RecordingGlowModifier(isRecording: {
             if case .recording = state { return true }
@@ -109,7 +109,7 @@ struct BlinkingDot: View {
 
     var body: some View {
         Circle()
-            .fill(Color(red: 0.91, green: 0.2, blue: 0.2))
+            .fill(Color(red: 1.0, green: 0.18, blue: 0.18))
             .frame(width: 7, height: 7)
             .opacity(visible ? 1 : 0.15)
             .onAppear {
@@ -151,7 +151,7 @@ struct CompactWaveformView: View {
         HStack(spacing: 2) {
             ForEach(0..<barCount, id: \.self) { i in
                 RoundedRectangle(cornerRadius: 1.5)
-                    .fill(Color(red: 0.91, green: 0.627, blue: 0.125))
+                    .fill(Color(red: 1.0, green: 0.58, blue: 0.0))
                     .frame(width: 2.5, height: animate ? maxHeights[i] : maxHeights[i] * 0.3)
                     .animation(
                         .easeInOut(duration: 0.48)
@@ -193,7 +193,7 @@ struct RecordingGlowModifier: ViewModifier {
 class HUDWindow: NSWindow {
     init() {
         super.init(
-            contentRect: NSRect(x: 0, y: 0, width: 210, height: 34),
+            contentRect: NSRect(x: 0, y: 0, width: 170, height: 30),
             styleMask: [.borderless],
             backing: .buffered,
             defer: false
@@ -224,8 +224,8 @@ class HUDWindow: NSWindow {
     private func position() {
         guard let screen = NSScreen.main else { return }
         let frame = screen.visibleFrame
-        let x = frame.maxX - 210 - 16
-        let y = frame.maxY - 34 - 16
+        let x = frame.midX - 85
+        let y = frame.minY + 60
         setFrameOrigin(NSPoint(x: x, y: y))
     }
 }
