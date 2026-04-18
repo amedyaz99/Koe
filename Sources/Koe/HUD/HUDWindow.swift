@@ -192,7 +192,10 @@ class HUDWindow: NSWindow {
 
     func hide() {
         DispatchQueue.main.async { [weak self] in
-            self?.orderOut(nil)
+            guard let self = self else { return }
+            self.orderOut(nil)
+            // Reset state to recording so the next show starts clean
+            self.stateHolder.hudState = .recording
         }
     }
 
