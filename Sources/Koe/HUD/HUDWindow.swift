@@ -28,6 +28,9 @@ struct HUDView: View {
                 RoundedRectangle(cornerRadius: 15, style: .continuous)
                     .fill(Color.black)
 
+                RoundedRectangle(cornerRadius: 15, style: .continuous)
+                    .strokeBorder(glowColor, lineWidth: 2)
+
                 HStack(spacing: 10) {
                     leadingView
                     trailingView
@@ -36,11 +39,6 @@ struct HUDView: View {
                 .padding(.vertical, 8)
             }
             .fixedSize()
-            .shadow(color: glowColor.opacity(glowOpacity), radius: glowRadius)
-            .modifier(RecordingGlowModifier(isRecording: {
-                if case .recording = holder.hudState { return true }
-                return false
-            }()))
         }
     }
 
@@ -89,24 +87,6 @@ struct HUDView: View {
         case .transcribing: return Color(red: 0.392, green: 0.471, blue: 0.878)
         case .done:         return Color(red: 0.235, green: 0.722, blue: 0.353)
         case .error:        return Color(red: 0.863, green: 0.2, blue: 0.2)
-        }
-    }
-
-    private var glowOpacity: Double {
-        switch holder.hudState {
-        case .recording:    return 0   // handled by RecordingGlowModifier
-        case .transcribing: return 0.08
-        case .done:         return 0.08
-        case .error:        return 0.08
-        }
-    }
-
-    private var glowRadius: CGFloat {
-        switch holder.hudState {
-        case .recording:    return 0
-        case .transcribing: return 8
-        case .done:         return 8
-        case .error:        return 8
         }
     }
 }
@@ -170,28 +150,6 @@ struct CompactWaveformView: View {
         }
         .frame(height: 20)
         .onAppear { animate = true }
-    }
-}
-
-// HUD is recreated fresh per state, so onAppear is sufficient — no onChange needed
-struct RecordingGlowModifier: ViewModifier {
-    let isRecording: Bool
-    @State private var glowing = false
-
-    func body(content: Content) -> some View {
-        content
-            .shadow(
-                color: isRecording
-                    ? Color(red: 0.863, green: 0.2, blue: 0.2).opacity(glowing ? 0.15 : 0.05)
-                    : .clear,
-                radius: glowing ? 10 : 6
-            )
-            .onAppear {
-                guard isRecording else { return }
-                withAnimation(.easeInOut(duration: 1.4).repeatForever(autoreverses: true)) {
-                    glowing = true
-                }
-            }
     }
 }
 
