@@ -13,6 +13,9 @@ class AppState: ObservableObject {
     private var hud: HUDWindow
     private var hotkeyManager: HotkeyManager!
     
+    @AppStorage("koe.autoPaste") private var autoPasteEnabled = true
+    private var frontmostAppAtRecordStart: NSRunningApplication?
+    
     init() {
         self.recorder = AudioRecorder()
         self.transcriber = WhisperTranscriber()
@@ -46,6 +49,7 @@ class AppState: ObservableObject {
     }
     
     private func startRecording() {
+        frontmostAppAtRecordStart = NSWorkspace.shared.frontmostApplication
         recorder.start { [weak self] granted in
             Task { @MainActor [weak self] in
                 guard let self = self else { return }
@@ -86,7 +90,13 @@ class AppState: ObservableObject {
                         ClipboardManager.copy(text)
                         TranscriptStore.shared.add(text)
                         self.lastTranscript = text
-                        self.hud.show(state: .done(text: text))
+                        if self.autoPasteEnabled, let app = self.frontmostAppAtRecordStart {
+                            PasteManager.paste(to: app)
+                            self.hud.show(state: .pasted(text: text))
+                        } else {
+                            self.hud.show(state: .done(text: text))
+                        }
+                        self.frontmostAppAtRecordStart = nil
                         self.scheduleHUDHide(after: 2.0)
                     case .failure:
                         self.failTranscription()
@@ -97,6 +107,7 @@ class AppState: ObservableObject {
     }
     
     private func failTranscription() {
+        frontmostAppAtRecordStart = nil
         hud.show(state: .error)
         scheduleHUDHide(after: 1.5)
     }
