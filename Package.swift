@@ -11,7 +11,11 @@ let package = Package(
         .executableTarget(
             name: "Koe",
             path: "Sources/Koe",
-            exclude: ["Resources/Info.plist"]
+            exclude: ["Resources/Info.plist"],
+            resources: [
+                .copy("Resources/whisper-cli"),
+                .copy("Resources/ggml-base.en.bin")
+            ]
         )
     ]
 )

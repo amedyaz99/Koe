@@ -23,6 +23,12 @@ class WhisperTranscriber: @unchecked Sendable {
         guard let binaryURL = resolveBinary() else { throw TranscriberError.binaryNotFound }
         guard let modelURL = resolveModel() else { throw TranscriberError.modelNotFound }
 
+        // Ensure bundled binary has executable permissions
+        try? FileManager.default.setAttributes(
+            [.posixPermissions: 0o755],
+            ofItemAtPath: binaryURL.path
+        )
+
         let process = Process()
         process.executableURL = binaryURL
         process.arguments = [
