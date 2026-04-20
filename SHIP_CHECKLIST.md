@@ -34,6 +34,12 @@ Right now users need to install whisper-cli via Homebrew and download the model 
   ```
 - [ ] Delete your Homebrew whisper (`brew uninstall whisper-cpp`) and test the app cold — transcription should still work
 
+**Size optimization (optional):** The bundled model adds ~141MB to the app. To reduce download size, download the model on first launch instead:
+- Skip adding `ggml-base.en.bin` to resources
+- Add a "Downloading model..." HUD state
+- Download from `https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-base.en.bin` on first use
+- Save to `~/Library/Application Support/Koe/ggml-base.en.bin` and reference that path in `resolveModel()`
+
 ---
 
 ## 2. Fix silent failure when whisper isn't found
