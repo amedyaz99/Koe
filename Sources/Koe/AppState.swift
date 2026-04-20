@@ -1,30 +1,34 @@
 import SwiftUI
 import AppKit
 import Combine
+import AVFoundation
 
 @MainActor
 class AppState: ObservableObject {
     @Published var isRecording = false
     @Published var isTranscribing = false
     @Published var lastTranscript: String?
+    @Published var showOnboarding: Bool = false
 
     private var recorder: AudioRecorder
     private var transcriber: WhisperTranscriber
     private var hud: HUDWindow
     var hotkeyManager: HotkeyManager!
-    
+
     @AppStorage("koe.autoPaste") private var autoPasteEnabled = true
+    @AppStorage("koe.hasCompletedOnboarding") private var hasCompletedOnboarding = false
     private var frontmostAppAtRecordStart: NSRunningApplication?
-    
+    private var onboardingController: OnboardingWindowController?
+
     init() {
         self.recorder = AudioRecorder()
         self.transcriber = WhisperTranscriber()
         self.hud = HUDWindow()
-        
+
         self.hotkeyManager = HotkeyManager(
-            onTrigger: { [weak self] in 
+            onTrigger: { [weak self] in
                 Task { @MainActor in
-                    self?.toggleRecording() 
+                    self?.toggleRecording()
                 }
             },
             onEscape: { [weak self] in
@@ -35,6 +39,22 @@ class AppState: ObservableObject {
             }
         )
         self.hotkeyManager.register()
+
+        // Show onboarding on first launch
+        if !hasCompletedOnboarding {
+            self.showOnboarding = true
+            self.onboardingController = OnboardingWindowController(appState: self)
+            DispatchQueue.main.async { [weak self] in
+                self?.onboardingController?.show()
+            }
+        }
+    }
+
+    func completeOnboarding() {
+        hasCompletedOnboarding = true
+        showOnboarding = false
+        onboardingController?.close()
+        onboardingController = nil
     }
     
     func toggleRecording() {

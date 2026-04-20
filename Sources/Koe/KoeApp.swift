@@ -3,7 +3,7 @@ import SwiftUI
 @main
 struct KoeApp: App {
     @StateObject private var appState = AppState()
-    
+
     init() {
         // AppKit needs to be initialized before the application starts for this to work
         NSApplication.shared.setActivationPolicy(.accessory)
