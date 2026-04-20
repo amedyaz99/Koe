@@ -7,11 +7,11 @@ class AppState: ObservableObject {
     @Published var isRecording = false
     @Published var isTranscribing = false
     @Published var lastTranscript: String?
-    
+
     private var recorder: AudioRecorder
     private var transcriber: WhisperTranscriber
     private var hud: HUDWindow
-    private var hotkeyManager: HotkeyManager!
+    var hotkeyManager: HotkeyManager!
     
     @AppStorage("koe.autoPaste") private var autoPasteEnabled = true
     private var frontmostAppAtRecordStart: NSRunningApplication?
@@ -39,8 +39,16 @@ class AppState: ObservableObject {
     
     func toggleRecording() {
         guard !isTranscribing else { return }
+
+        // Check accessibility permission
+        guard hotkeyManager.checkTrustStatus() else {
+            hud.show(state: .accessibilityDenied)
+            scheduleHUDHide(after: 2.0)
+            return
+        }
+
         NSHapticFeedbackManager.defaultPerformer.perform(.generic, performanceTime: .now)
-        
+
         if isRecording {
             stopAndTranscribe()
         } else {

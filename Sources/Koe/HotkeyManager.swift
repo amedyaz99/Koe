@@ -1,8 +1,11 @@
 @preconcurrency import ApplicationServices
+import AppKit
 import Foundation
 
 @MainActor
-final class HotkeyManager {
+final class HotkeyManager: ObservableObject {
+    @Published private(set) var isAccessibilityTrusted = false
+
     private let onTrigger: () -> Void
     private let onEscape: (() -> Void)?
     private var eventTap: CFMachPort?
@@ -30,12 +33,24 @@ final class HotkeyManager {
     func register() {
         let options = [kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: true] as CFDictionary
         let trusted = AXIsProcessTrustedWithOptions(options)
+        isAccessibilityTrusted = trusted
 
         if trusted {
             createEventTap()
         } else {
             pollUntilTrusted()
         }
+    }
+
+    func checkTrustStatus() -> Bool {
+        let trusted = AXIsProcessTrusted()
+        isAccessibilityTrusted = trusted
+        return trusted
+    }
+
+    func openAccessibilitySettings() {
+        let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility")!
+        NSWorkspace.shared.open(url)
     }
 
     @objc private func hotkeyConfigChanged() {
@@ -48,8 +63,14 @@ final class HotkeyManager {
             while !AXIsProcessTrusted() {
                 try? await Task.sleep(nanoseconds: 1_000_000_000)
             }
-            await self?.createEventTap()
+            await self?.onAccessibilityGranted()
         }
+    }
+
+    @MainActor
+    private func onAccessibilityGranted() {
+        isAccessibilityTrusted = true
+        createEventTap()
     }
 
     private func tearDown() {

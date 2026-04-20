@@ -22,6 +22,7 @@ struct KoeApp: App {
 
         Settings {
             SettingsTab()
+                .environmentObject(appState)
                 .frame(width: 450, height: 550)
         }
     }

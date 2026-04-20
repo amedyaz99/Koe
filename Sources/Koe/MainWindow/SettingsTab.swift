@@ -1,7 +1,9 @@
 import AppKit
 import SwiftUI
+import ServiceManagement
 
 struct SettingsTab: View {
+    @EnvironmentObject var appState: AppState
     @AppStorage("koe.launchAtLogin") private var launchAtLogin = false
     @AppStorage("koe.autoPaste") private var autoPasteEnabled = true
     @State private var currentConfig = HotkeyConfig.current
@@ -19,16 +21,16 @@ struct SettingsTab: View {
                         Text("Trigger")
                             .font(KoeTheme.monoSmall)
                             .foregroundColor(KoeTheme.washiPaper)
-                        
+
                         Spacer()
-                        
+
                         HotkeyBadge(
                             config: currentConfig,
                             isRecording: isRecordingHotkey,
                             onTap: toggleHotkeyRecording
                         )
                     }
-                    
+
                     if isRecordingHotkey {
                         Text("Press a key combination, or Escape to cancel.")
                             .font(KoeTheme.monoTiny)
@@ -57,14 +59,16 @@ struct SettingsTab: View {
                             Text("Launch at login")
                                 .font(KoeTheme.monoSmall)
                                 .foregroundColor(KoeTheme.washiPaper)
-                            
+
                             Spacer()
-                            
+
                             Toggle("", isOn: $launchAtLogin)
                                 .toggleStyle(.switch)
                                 .tint(KoeTheme.vermilion)
+                                .onChange(of: launchAtLogin) { newValue in
+                                    updateLaunchAtLogin(enabled: newValue)
+                                }
                         }
-
                         Divider()
                             .background(KoeTheme.washiMuted.opacity(0.15))
 
@@ -81,6 +85,39 @@ struct SettingsTab: View {
                             Toggle("", isOn: $autoPasteEnabled)
                                 .toggleStyle(.switch)
                                 .tint(KoeTheme.vermilion)
+                        }
+                    }
+                }
+
+                settingsSection(
+                    heading: "Permissions",
+                    japanese: "権限"
+                ) {
+                    VStack(spacing: 12) {
+                        HStack {
+                            VStack(alignment: .leading, spacing: 3) {
+                                Text("Accessibility")
+                                    .font(KoeTheme.monoSmall)
+                                    .foregroundColor(KoeTheme.washiPaper)
+                                Text("Required for global hotkey")
+                                    .font(KoeTheme.monoTiny)
+                                    .foregroundColor(KoeTheme.washiMuted)
+                            }
+
+                            Spacer()
+
+                            if appState.hotkeyManager?.isAccessibilityTrusted ?? false {
+                                Text("Granted")
+                                    .font(KoeTheme.monoTiny)
+                                    .foregroundColor(KoeTheme.washiMuted)
+                            } else {
+                                Button("Grant Access →") {
+                                    appState.hotkeyManager?.openAccessibilitySettings()
+                                }
+                                .font(KoeTheme.monoSmall)
+                                .foregroundColor(KoeTheme.vermilion)
+                                .buttonStyle(.plain)
+                            }
                         }
                     }
                 }
@@ -193,6 +230,18 @@ struct SettingsTab: View {
         isRecordingHotkey = false
         if let m = monitor { NSEvent.removeMonitor(m); monitor = nil }
         if !cancelled { currentConfig = HotkeyConfig.current }
+    }
+
+    private func updateLaunchAtLogin(enabled: Bool) {
+        do {
+            if enabled {
+                try SMAppService.mainApp.register()
+            } else {
+                try SMAppService.mainApp.unregister()
+            }
+        } catch {
+            print("Failed to update launch at login: \(error)")
+        }
     }
 }
 
