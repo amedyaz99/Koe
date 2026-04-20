@@ -34,16 +34,9 @@ Right now users need to install whisper-cli via Homebrew and download the model 
   ```
 - [ ] Delete your Homebrew whisper (`brew uninstall whisper-cpp`) and test the app cold — transcription should still work
 
-**Size optimization (optional):** The bundled model adds ~141MB to the app. To reduce download size, download the model on first launch instead:
-- Skip adding `ggml-base.en.bin` to resources
-- Add a "Downloading model..." HUD state
-- Download from `https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-base.en.bin` on first use
-- Save to `~/Library/Application Support/Koe/ggml-base.en.bin` and reference that path in `resolveModel()`
-
 ---
 
 ## 2. Fix silent failure when whisper isn't found
-**Effort: ~half a day**
 
 Currently if the binary is missing, the HUD just shows `error` with no explanation. Users will think the app is broken.
 
@@ -168,3 +161,13 @@ Without this, macOS shows "cannot be opened because the developer cannot be veri
 | 5 | Sign + notarize | 1 weekend | macOS Gatekeeper block |
 
 Do them in order. After all five, Koe is ready to share publicly.
+
+
+
+
++**Size optimization (optional):** The bundled model adds ~141MB to the app. To reduce download size, download the model on first la       
+         +unch instead:                                                                                                                             
+      38 +- Skip adding `ggml-base.en.bin` to resources                                                                                             
+      39 +- Add a "Downloading model..." HUD state                                                                                                  
+      40 +- Download from `https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-base.en.bin` on first use                                 
+      41 +- Save to `~/Library/Application Support/Koe/ggml-base.en.bin` and reference that path in `resolveModel()` 

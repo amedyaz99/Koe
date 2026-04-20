@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Koe — Tab Designs</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #13100D;
+    color: #f8f5f0;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif;
+    padding: 32px;
+    min-height: 100vh;
+  }
+  .page-title { font-family: Georgia, serif; font-size: 20px; color: #f8f5f0; margin-bottom: 4px; }
+  .subtitle { font-size: 12px; color: #8C7B6A; margin-bottom: 28px; }
+
+  /* ─── Window Shell ─── */
+  .window {
+    width: 520px;
+    margin: 0 auto;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.06);
+    box-shadow: 0 32px 80px rgba(0,0,0,0.6), 0 0 0 0.5px rgba(0,0,0,0.4);
+    position: relative;
+    background: #F8F5F0;
+  }
+
+  /* dot grid overlay */
+  .dot-grid {
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(circle, rgba(192,57,43,0.16) 1.2px, transparent 1.2px);
+    background-size: 18px 18px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ─── Tape marks ─── */
+  .tape-row {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    justify-content: space-between;
+    padding: 0 56px;
+    background: transparent;
+  }
+  .tape {
+    width: 34px;
+    height: 10px;
+    background: rgba(184,168,152,0.48);
+    position: relative;
+  }
+  .tape::before, .tape::after {
+    content: '';
+    position: absolute;
+    left: 0; right: 0;
+    height: 1px;
+    background: rgba(184,168,152,0.3);
+  }
+  .tape::before { top: 1px; }
+  .tape::after  { bottom: 1px; }
+
+  /* ─── Titlebar ─── */
+  .titlebar {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    padding: 8px 14px 0;
+    gap: 8px;
+  }
+  .tl { width: 10px; height: 10px; border-radius: 50%; }
+  .tl-r { background: #ff5f56; }
+  .tl-y { background: #ffbd2e; }
+  .tl-g { background: #27c93f; }
+  .win-title {
+    font-family: Georgia, serif;
+    font-size: 12px;
+    color: rgba(26,20,16,0.5);
+    margin-left: 4px;
+  }
+
+  /* ─── Tab Bar ─── */
+  .tab-bar {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    padding: 10px 14px 0;
+    gap: 2px;
+    border-bottom: 1px solid rgba(26,20,16,0.1);
+    align-items: flex-end;
+  }
+  .tab-btn {
+    padding: 6px 16px 7px;
+    font-size: 11px;
+    font-family: Georgia, serif;
+    color: #8C7B6A;
+    cursor: pointer;
+    border-radius: 5px 5px 0 0;
+    border: 1px solid transparent;
+    border-bottom: none;
+    background: transparent;
+    letter-spacing: 0.02em;
+    transition: color 0.15s;
+    user-select: none;
+  }
+  .tab-btn:hover { color: #2C2018; }
+  .tab-btn.active {
+    color: #1A1410;
+    background: #F8F5F0;
+    border-color: rgba(26,20,16,0.1);
+    border-bottom-color: #F8F5F0;
+    margin-bottom: -1px;
+  }
+  .tab-inkan {
+    margin-left: auto;
+    align-self: flex-end;
+    margin-bottom: 5px;
+  }
+  .inkan {
+    width: 30px;
+    height: 30px;
+    background: rgba(192,57,43,0.88);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform: rotate(-4deg);
+    font-family: Georgia, serif;
+    font-size: 10px;
+    color: white;
+    line-height: 1.15;
+    text-align: center;
+    box-shadow: 1px 2px 6px rgba(192,57,43,0.35);
+    flex-shrink: 0;
+  }
+
+  /* ─── Tab content panels ─── */
+  .tab-content {
+    position: relative;
+    z-index: 1;
+    height: 380px;
+    overflow: hidden;
+  }
+  .tab-panel { display: none; height: 100%; }
+  .tab-panel.active { display: flex; flex-direction: column; }
+
+  /* ══════════════════════════════
+     TAB 1 — RECORD
+  ══════════════════════════════ */
+  .record-panel {
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    padding: 24px;
+  }
+
+  /* Recording Pill */
+  .rec-pill {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: rgba(26,20,16,0.05);
+    border: 1px solid rgba(192,57,43,0.18);
+    border-radius: 16px;
+    padding: 14px 22px;
+    width: 280px;
+    transition: all 0.2s;
+  }
+  .rec-pill.idle { border-color: rgba(26,20,16,0.1); background: rgba(26,20,16,0.03); }
+
+  /* Mic button (idle) */
+  .mic-btn {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: #1A1410;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    cursor: pointer;
+    transition: transform 0.1s;
+  }
+  .mic-btn svg { width: 18px; height: 18px; fill: #F8F5F0; }
+
+  /* Waveform bars */
+  .waveform {
+    display: flex;
+    align-items: center;
+    gap: 2.5px;
+    height: 28px;
+    flex-shrink: 0;
+  }
+  .wbar {
+    width: 3px;
+    border-radius: 2px;
+    background: #1A1410;
+    animation: wave 0.9s ease-in-out infinite;
+  }
+  .wbar:nth-child(1) { animation-delay: 0s;    height: 8px;  }
+  .wbar:nth-child(2) { animation-delay: 0.12s; height: 18px; }
+  .wbar:nth-child(3) { animation-delay: 0.22s; height: 12px; }
+  .wbar:nth-child(4) { animation-delay: 0.08s; height: 22px; }
+  .wbar:nth-child(5) { animation-delay: 0.18s; height: 10px; }
+  .wbar:nth-child(6) { animation-delay: 0.3s;  height: 16px; }
+  .wbar:nth-child(7) { animation-delay: 0.05s; height: 8px;  }
+  @keyframes wave {
+    0%, 100% { transform: scaleY(1); }
+    50%       { transform: scaleY(0.3); }
+  }
+
+  .pill-info { flex: 1; min-width: 0; }
+  .pill-status {
+    font-family: 'SF Mono', 'Courier New', monospace;
+    font-size: 10px;
+    color: #1A1410;
+    font-weight: 500;
+  }
+  .pill-sub {
+    font-family: 'SF Mono', 'Courier New', monospace;
+    font-size: 9px;
+    color: #C0392B;
+    margin-top: 2px;
+    letter-spacing: 0.04em;
+  }
+  .pill-sub.idle { color: #8C7B6A; }
+
+  /* Terminal meta block */
+  .terminal-block {
+    width: 280px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    padding: 10px 14px;
+    background: rgba(26,20,16,0.03);
+    border: 1px solid rgba(26,20,16,0.07);
+    border-radius: 6px;
+  }
+  .tm-row {
+    display: flex;
+    align-items: baseline;
+    gap: 0;
+  }
+  .tm-key {
+    font-family: 'SF Mono', 'Courier New', monospace;
+    font-size: 9.5px;
+    color: #8C7B6A;
+    width: 90px;
+    flex-shrink: 0;
+  }
+  .tm-colon {
+    font-family: 'SF Mono', monospace;
+    font-size: 9.5px;
+    color: rgba(140,123,106,0.5);
+    margin-right: 6px;
+  }
+  .tm-val {
+    font-family: 'SF Mono', 'Courier New', monospace;
+    font-size: 9.5px;
+    color: #C0392B;
+    flex: 1;
+  }
+  .tm-val.neutral { color: #1A1410; }
+
+  /* Archival rule */
+  .arch-rule {
+    width: 280px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .arch-rule-line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(to right, rgba(192,57,43,0.4), transparent);
+  }
+  .arch-rule-dot {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: rgba(192,57,43,0.3);
+    flex-shrink: 0;
+  }
+
+  /* ══════════════════════════════
+     TAB 2 — HISTORY
+  ══════════════════════════════ */
+  .history-panel { padding: 0; overflow: hidden; }
+  .history-header {
+    padding: 14px 20px 10px;
+    border-bottom: 1px solid rgba(26,20,16,0.08);
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+  }
+  .history-heading {
+    font-family: Georgia, serif;
+    font-size: 11px;
+    color: #8C7B6A;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .history-count {
+    font-family: 'SF Mono', monospace;
+    font-size: 9px;
+    color: rgba(192,57,43,0.6);
+  }
+  .history-list { overflow-y: auto; flex: 1; }
+  .history-entry {
+    padding: 12px 20px;
+    border-bottom: 1px solid rgba(26,20,16,0.06);
+    cursor: pointer;
+    transition: background 0.1s;
+    position: relative;
+  }
+  .history-entry:hover { background: rgba(26,20,16,0.03); }
+  .history-entry:hover .entry-copy { opacity: 1; }
+  .entry-index {
+    font-family: 'SF Mono', monospace;
+    font-size: 8px;
+    color: rgba(192,57,43,0.4);
+    position: absolute;
+    left: 20px;
+    top: 12px;
+  }
+  .entry-text {
+    font-family: Georgia, serif;
+    font-size: 12px;
+    color: #1A1410;
+    line-height: 1.5;
+    margin-left: 24px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .entry-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 5px;
+    margin-left: 24px;
+  }
+  .entry-date {
+    font-family: 'SF Mono', monospace;
+    font-size: 8.5px;
+    color: #8C7B6A;
+  }
+  .entry-rule {
+    flex: 1;
+    height: 1px;
+    background: rgba(192,57,43,0.12);
+    margin: 0 10px;
+  }
+  .entry-copy {
+    font-family: 'SF Mono', monospace;
+    font-size: 8px;
+    color: #C0392B;
+    opacity: 0;
+    transition: opacity 0.15s;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  /* ══════════════════════════════
+     TAB 3 — SETTINGS
+  ══════════════════════════════ */
+  .settings-panel { overflow-y: auto; padding: 0; }
+  .settings-section { padding: 16px 22px; border-bottom: 1px solid rgba(26,20,16,0.07); }
+  .settings-section:last-child { border-bottom: none; }
+
+  .section-heading {
+    font-family: Georgia, serif;
+    font-size: 9.5px;
+    color: #8C7B6A;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-heading::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(to right, rgba(192,57,43,0.25), transparent);
+  }
+  /* Japanese vertical label */
+  .section-heading-jp {
+    font-family: Georgia, serif;
+    font-size: 8px;
+    color: rgba(192,57,43,0.4);
+    margin-left: 4px;
+    letter-spacing: 0;
+  }
+
+  .setting-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    padding: 7px 0;
+    border-bottom: 1px solid rgba(192,57,43,0.1);
+    gap: 16px;
+  }
+  .setting-row:last-child { border-bottom: none; }
+
+  .setting-label {
+    font-family: 'SF Mono', 'Courier New', monospace;
+    font-size: 10px;
+    color: #1A1410;
+    flex-shrink: 0;
+  }
+  .setting-value {
+    font-family: 'SF Mono', 'Courier New', monospace;
+    font-size: 10px;
+    color: #C0392B;
+    text-align: right;
+  }
+  .setting-value.muted { color: #8C7B6A; }
+  .setting-dots {
+    flex: 1;
+    border-bottom: 1px dotted rgba(26,20,16,0.2);
+    margin-bottom: 2px;
+    min-width: 20px;
+  }
+
+  /* Hotkey badge */
+  .hotkey-badge {
+    font-family: 'SF Mono', monospace;
+    font-size: 10px;
+    color: #1A1410;
+    background: rgba(26,20,16,0.06);
+    border: 1px solid rgba(26,20,16,0.12);
+    border-radius: 4px;
+    padding: 2px 8px;
+  }
+
+  /* Toggle */
+  .toggle-track {
+    width: 30px;
+    height: 17px;
+    border-radius: 8px;
+    background: rgba(26,20,16,0.12);
+    position: relative;
+    cursor: pointer;
+    transition: background 0.2s;
+    flex-shrink: 0;
+  }
+  .toggle-track.on { background: #1A1410; }
+  .toggle-thumb {
+    position: absolute;
+    top: 2px; left: 2px;
+    width: 13px; height: 13px;
+    border-radius: 50%;
+    background: #F8F5F0;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    transition: transform 0.2s;
+  }
+  .toggle-track.on .toggle-thumb { transform: translateX(13px); }
+
+  /* About section */
+  .about-block {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 4px 0;
+  }
+  .wordmark {
+    font-family: Georgia, serif;
+    font-size: 28px;
+    color: #1A1410;
+    letter-spacing: -0.02em;
+    line-height: 1;
+  }
+  .wordmark-dot { color: #C0392B; }
+  .wordmark-sub {
+    font-family: 'SF Mono', monospace;
+    font-size: 9px;
+    color: #8C7B6A;
+    letter-spacing: 0.04em;
+    margin-top: 4px;
+  }
+  .about-meta { text-align: right; }
+  .about-ver {
+    font-family: 'SF Mono', monospace;
+    font-size: 9px;
+    color: #8C7B6A;
+  }
+  .about-inkan {
+    width: 34px;
+    height: 34px;
+    background: rgba(192,57,43,0.88);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform: rotate(-4deg);
+    font-family: Georgia, serif;
+    font-size: 11px;
+    color: white;
+    line-height: 1.15;
+    text-align: center;
+    box-shadow: 1px 2px 8px rgba(192,57,43,0.3);
+    margin-top: 4px;
+    margin-left: auto;
+  }
+</style>
+</head>
+<body>
+
+<p class="page-title">Koe — All Three Tabs</p>
+<p class="subtitle">Click the tabs inside the window to switch between them. Full Japanese stationery aesthetic applied.</p>
+
+<div class="window">
+  <div class="dot-grid"></div>
+
+  <!-- Tape marks -->
+  <div class="tape-row">
+    <div class="tape"></div>
+    <div class="tape"></div>
+    <div class="tape"></div>
+  </div>
+
+  <!-- Titlebar -->
+  <div class="titlebar">
+    <div class="tl tl-r"></div>
+    <div class="tl tl-y"></div>
+    <div class="tl tl-g"></div>
+    <span class="win-title">Koe</span>
+  </div>
+
+  <!-- Tab bar -->
+  <div class="tab-bar">
+    <div class="tab-btn active" onclick="switchTab('record', this)">Record</div>
+    <div class="tab-btn" onclick="switchTab('history', this)">History</div>
+    <div class="tab-btn" onclick="switchTab('settings', this)">Settings</div>
+    <div class="tab-inkan"><div class="inkan">声<br>音</div></div>
+  </div>
+
+  <!-- Tab content -->
+  <div class="tab-content">
+
+    <!-- ── RECORD ── -->
+    <div class="tab-panel active record-panel" id="panel-record">
+
+      <!-- Recording pill (active waveform state) -->
+      <div class="rec-pill">
+        <div class="waveform">
+          <div class="wbar"></div><div class="wbar"></div><div class="wbar"></div>
+          <div class="wbar"></div><div class="wbar"></div><div class="wbar"></div>
+          <div class="wbar"></div>
+        </div>
+        <div class="pill-info">
+          <div class="pill-status">Buffer: Active</div>
+          <div class="pill-sub">● REC — 00:04</div>
+        </div>
+      </div>
+
+      <!-- Archival rule -->
+      <div class="arch-rule">
+        <div class="arch-rule-line"></div>
+        <div class="arch-rule-dot"></div>
+      </div>
+
+      <!-- Terminal metadata block -->
+      <div class="terminal-block">
+        <div class="tm-row">
+          <span class="tm-key">Sample Rate</span>
+          <span class="tm-colon">:</span>
+          <span class="tm-val">16kHz</span>
+        </div>
+        <div class="tm-row">
+          <span class="tm-key">Channels</span>
+          <span class="tm-colon">:</span>
+          <span class="tm-val">1 (mono)</span>
+        </div>
+        <div class="tm-row">
+          <span class="tm-key">Model</span>
+          <span class="tm-colon">:</span>
+          <span class="tm-val neutral">base.en</span>
+        </div>
+        <div class="tm-row">
+          <span class="tm-key">Engine</span>
+          <span class="tm-colon">:</span>
+          <span class="tm-val neutral">whisper.cpp</span>
+        </div>
+        <div class="tm-row">
+          <span class="tm-key">Status</span>
+          <span class="tm-colon">:</span>
+          <span class="tm-val">Recording</span>
+        </div>
+      </div>
+
+      <!-- Archival rule -->
+      <div class="arch-rule">
+        <div class="arch-rule-line"></div>
+        <div class="arch-rule-dot"></div>
+      </div>
+
+      <!-- Mic button (tap to stop) -->
+      <div style="display:flex;flex-direction:column;align-items:center;gap:7px">
+        <div class="mic-btn">
+          <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.91-3c-.49 0-.9.36-.98.85C16.52 14.2 14.47 16 12 16s-4.52-1.8-4.93-4.15c-.08-.49-.49-.85-.98-.85-.61 0-1.09.54-1 1.14.49 3 2.89 5.35 5.91 5.78V20c0 .55.45 1 1 1s1-.45 1-1v-2.08c3.02-.43 5.42-2.78 5.91-5.78.1-.6-.39-1.14-1-1.14z"/></svg>
+        </div>
+        <span style="font-family:'SF Mono',monospace;font-size:9px;color:#8C7B6A;letter-spacing:0.04em">tap to stop</span>
+      </div>
+
+    </div>
+
+    <!-- ── HISTORY ── -->
+    <div class="tab-panel history-panel" id="panel-history">
+      <div class="history-header">
+        <span class="history-heading">Transcript Log</span>
+        <span class="history-count">04 entries</span>
+      </div>
+      <div class="history-list">
+
+        <div class="history-entry">
+          <span class="entry-index">01.</span>
+          <div class="entry-text">Schedule the team sync for Thursday at two PM and make sure to send the calendar invite to everyone on the distribution list.</div>
+          <div class="entry-meta">
+            <span class="entry-date">2 min ago</span>
+            <div class="entry-rule"></div>
+            <span class="entry-copy">copy</span>
+          </div>
+        </div>
+
+        <div class="history-entry">
+          <span class="entry-index">02.</span>
+          <div class="entry-text">The API endpoint needs to be refactored to handle pagination properly before we ship the next release.</div>
+          <div class="entry-meta">
+            <span class="entry-date">18 min ago</span>
+            <div class="entry-rule"></div>
+            <span class="entry-copy">copy</span>
+          </div>
+        </div>
+
+        <div class="history-entry">
+          <span class="entry-index">03.</span>
+          <div class="entry-text">Buy oat milk, sourdough bread, and that Japanese mustard from the international market on the way home.</div>
+          <div class="entry-meta">
+            <span class="entry-date">1 hr ago</span>
+            <div class="entry-rule"></div>
+            <span class="entry-copy">copy</span>
+          </div>
+        </div>
+
+        <div class="history-entry">
+          <span class="entry-index">04.</span>
+          <div class="entry-text">Follow up with the design team about the onboarding flow revisions they mentioned in yesterday's standup.</div>
+          <div class="entry-meta">
+            <span class="entry-date">Yesterday</span>
+            <div class="entry-rule"></div>
+            <span class="entry-copy">copy</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── SETTINGS ── -->
+    <div class="tab-panel settings-panel" id="panel-settings">
+
+      <div class="settings-section">
+        <div class="section-heading">Hotkey <span class="section-heading-jp">— ショートカット</span></div>
+        <div class="setting-row">
+          <span class="setting-label">Trigger</span>
+          <div class="setting-dots"></div>
+          <span class="hotkey-badge">⌥ Space</span>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <div class="section-heading">Transcription <span class="section-heading-jp">— 文字起こし</span></div>
+        <div class="setting-row">
+          <span class="setting-label">Model</span>
+          <div class="setting-dots"></div>
+          <span class="setting-value">base.en</span>
+        </div>
+        <div class="setting-row">
+          <span class="setting-label">Engine</span>
+          <div class="setting-dots"></div>
+          <span class="setting-value muted">whisper.cpp</span>
+        </div>
+        <div class="setting-row">
+          <span class="setting-label">Language</span>
+          <div class="setting-dots"></div>
+          <span class="setting-value muted">auto</span>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <div class="section-heading">System <span class="section-heading-jp">— システム</span></div>
+        <div class="setting-row" style="align-items:center">
+          <span class="setting-label">Launch at login</span>
+          <div class="setting-dots"></div>
+          <div class="toggle-track" onclick="this.classList.toggle('on')">
+            <div class="toggle-thumb"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <div class="section-heading">About <span class="section-heading-jp">— について</span></div>
+        <div class="about-block">
+          <div>
+            <div class="wordmark">koe<span class="wordmark-dot">.</span></div>
+            <div class="wordmark-sub">voice → clipboard</div>
+          </div>
+          <div class="about-meta">
+            <div class="about-ver">v1.0.0</div>
+            <div class="about-inkan">声<br>音</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div><!-- /.tab-content -->
+</div><!-- /.window -->
+
+<script>
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('panel-' + name).classList.add('active');
+}
+</script>
+</body>
+</html>

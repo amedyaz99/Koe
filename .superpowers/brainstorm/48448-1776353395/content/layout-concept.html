@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Koe — Layout Concept</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #1a1410;
+    color: #f8f5f0;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif;
+    padding: 32px;
+    min-height: 100vh;
+  }
+  h2 {
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #8C7B6A;
+    margin-bottom: 6px;
+  }
+  .subtitle {
+    font-size: 13px;
+    color: #8C7B6A;
+    margin-bottom: 32px;
+  }
+  .page-title {
+    font-family: 'Georgia', serif;
+    font-size: 22px;
+    color: #f8f5f0;
+    margin-bottom: 4px;
+  }
+
+  /* ---- Layout option cards ---- */
+  .layouts {
+    display: flex;
+    gap: 24px;
+    align-items: flex-start;
+  }
+
+  .layout-option {
+    flex: 1;
+    cursor: pointer;
+    border: 1.5px solid #2C2018;
+    border-radius: 10px;
+    overflow: hidden;
+    transition: border-color 0.15s, transform 0.1s;
+    background: #1f1a14;
+  }
+  .layout-option:hover {
+    border-color: #C0392B;
+    transform: translateY(-2px);
+  }
+  .layout-option.selected {
+    border-color: #C0392B;
+    box-shadow: 0 0 0 3px rgba(192,57,43,0.2);
+  }
+  .layout-label {
+    padding: 12px 16px;
+    border-top: 1px solid #2C2018;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .layout-label h3 {
+    font-size: 13px;
+    font-weight: 600;
+    color: #f8f5f0;
+  }
+  .layout-label p {
+    font-size: 11px;
+    color: #8C7B6A;
+    margin-top: 3px;
+  }
+  .badge {
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 3px;
+    background: rgba(192,57,43,0.15);
+    color: #C0392B;
+    border: 1px solid rgba(192,57,43,0.3);
+  }
+
+  /* ---- OPTION A: Sidebar layout mockup ---- */
+  .mock-window-a {
+    background: #F8F5F0;
+    position: relative;
+    overflow: hidden;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif;
+    height: 320px;
+    display: flex;
+    flex-direction: column;
+  }
+  /* Dot grid */
+  .mock-window-a::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(circle, rgba(192,57,43,0.18) 1px, transparent 1px);
+    background-size: 18px 18px;
+    pointer-events: none;
+    z-index: 0;
+  }
+  /* Tape marks at top */
+  .tape-bar {
+    display: flex;
+    gap: 0;
+    padding: 0 50px;
+    justify-content: space-between;
+    position: relative;
+    z-index: 1;
+    height: 9px;
+    align-items: flex-start;
+  }
+  .tape {
+    width: 28px;
+    height: 9px;
+    background: rgba(184,168,152,0.5);
+    flex-shrink: 0;
+  }
+  /* Traffic lights row */
+  .traffic-lights {
+    display: flex;
+    gap: 6px;
+    padding: 10px 14px 0;
+    position: relative;
+    z-index: 1;
+    align-items: center;
+  }
+  .tl { width: 10px; height: 10px; border-radius: 50%; }
+  .tl-r { background: #ff5f56; }
+  .tl-y { background: #ffbd2e; }
+  .tl-g { background: #27c93f; }
+  .tl-title {
+    margin-left: 8px;
+    font-size: 11px;
+    color: #8C7B6A;
+    font-family: 'Georgia', serif;
+  }
+  /* Body: sidebar + content */
+  .mock-body-a {
+    display: flex;
+    flex: 1;
+    position: relative;
+    z-index: 1;
+  }
+  .mock-sidebar-a {
+    width: 130px;
+    border-right: 1px solid rgba(26,20,16,0.1);
+    padding: 14px 0;
+    background: rgba(240,235,227,0.7);
+    backdrop-filter: blur(4px);
+    flex-shrink: 0;
+  }
+  .sidebar-brand {
+    padding: 0 14px 12px;
+    border-bottom: 1px solid rgba(192,57,43,0.12);
+    margin-bottom: 8px;
+  }
+  .sidebar-brand .koe-word {
+    font-family: 'Georgia', serif;
+    font-size: 17px;
+    color: #1A1410;
+    display: inline;
+  }
+  .sidebar-brand .koe-dot {
+    color: #C0392B;
+  }
+  .sidebar-section-heading {
+    font-family: 'Georgia', serif;
+    font-size: 9px;
+    color: #8C7B6A;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 10px 14px 4px;
+    writing-mode: horizontal-tb;
+  }
+  .sidebar-item {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 6px 14px;
+    font-size: 10px;
+    color: #2C2018;
+    cursor: pointer;
+  }
+  .sidebar-item.active {
+    background: rgba(192,57,43,0.08);
+    border-left: 2px solid #C0392B;
+    color: #C0392B;
+    padding-left: 12px;
+  }
+  .sidebar-item .dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; opacity: 0.5; }
+  .inkan {
+    position: absolute;
+    bottom: 12px;
+    left: 14px;
+    width: 28px;
+    height: 28px;
+    background: rgba(192,57,43,0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform: rotate(-4deg);
+    font-family: 'Georgia', serif;
+    font-size: 9px;
+    color: white;
+    line-height: 1.1;
+    text-align: center;
+  }
+  /* Main content */
+  .mock-content-a {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 16px;
+  }
+  .recording-pill {
+    background: rgba(26,20,16,0.06);
+    border: 1px solid rgba(192,57,43,0.2);
+    border-radius: 14px;
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 200px;
+  }
+  .waveform-mini {
+    display: flex;
+    gap: 2px;
+    align-items: center;
+    height: 18px;
+  }
+  .wbar {
+    width: 2.5px;
+    border-radius: 2px;
+    background: #1A1410;
+  }
+  .pill-meta {
+    flex: 1;
+  }
+  .pill-status {
+    font-family: 'SF Mono', 'Courier New', monospace;
+    font-size: 9px;
+    color: #1A1410;
+    opacity: 0.7;
+  }
+  .pill-label {
+    font-family: 'SF Mono', 'Courier New', monospace;
+    font-size: 8px;
+    color: #C0392B;
+    margin-top: 2px;
+  }
+  .terminal-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    width: 200px;
+  }
+  .tm-row {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+  }
+  .tm-key {
+    font-family: 'SF Mono', monospace;
+    font-size: 8px;
+    color: #8C7B6A;
+    width: 60px;
+  }
+  .tm-val {
+    font-family: 'SF Mono', monospace;
+    font-size: 8px;
+    color: #C0392B;
+  }
+  .action-row {
+    display: flex;
+    gap: 8px;
+  }
+  .mic-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #1A1410;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 14px;
+  }
+
+  /* ---- OPTION B: Tabbed redesign mockup ---- */
+  .mock-window-b {
+    background: #F8F5F0;
+    position: relative;
+    overflow: hidden;
+    height: 320px;
+    display: flex;
+    flex-direction: column;
+  }
+  .mock-window-b::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(circle, rgba(192,57,43,0.18) 1px, transparent 1px);
+    background-size: 18px 18px;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .tab-bar-b {
+    display: flex;
+    align-items: flex-end;
+    gap: 0;
+    padding: 28px 16px 0;
+    border-bottom: 1px solid rgba(26,20,16,0.08);
+    position: relative;
+    z-index: 1;
+  }
+  .tab-traffic {
+    display: flex;
+    gap: 5px;
+    position: absolute;
+    top: 10px;
+    left: 14px;
+  }
+  .tab-b {
+    padding: 6px 14px;
+    font-size: 10px;
+    color: #8C7B6A;
+    border: 1px solid transparent;
+    border-bottom: none;
+    cursor: pointer;
+    font-family: 'Georgia', serif;
+    background: transparent;
+    border-radius: 4px 4px 0 0;
+  }
+  .tab-b.active {
+    color: #1A1410;
+    background: #F8F5F0;
+    border-color: rgba(26,20,16,0.1);
+    border-bottom-color: #F8F5F0;
+    margin-bottom: -1px;
+  }
+  .tab-b-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 1;
+    gap: 10px;
+  }
+  .inkan-b {
+    position: absolute;
+    bottom: 10px;
+    right: 14px;
+    width: 28px;
+    height: 28px;
+    background: rgba(192,57,43,0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform: rotate(-4deg);
+    font-family: 'Georgia', serif;
+    font-size: 9px;
+    color: white;
+    line-height: 1.1;
+    text-align: center;
+  }
+  .tape-bar-b {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: space-between;
+    padding: 0 50px;
+    z-index: 2;
+  }
+  .tape-b { width: 28px; height: 9px; background: rgba(184,168,152,0.5); }
+  .archival-rule {
+    width: 200px;
+    height: 1px;
+    background: linear-gradient(to right, #C0392B 70%, transparent);
+    opacity: 0.4;
+  }
+  .status-block-b {
+    font-family: 'SF Mono', monospace;
+    font-size: 9px;
+    color: #8C7B6A;
+    border: 1px solid rgba(192,57,43,0.15);
+    border-radius: 4px;
+    padding: 8px 12px;
+    width: 200px;
+    background: rgba(255,255,255,0.4);
+  }
+  .status-block-b .sb-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 3px;
+  }
+  .status-block-b .sb-val { color: #C0392B; }
+
+  /* selection highlight */
+  .layout-option.selected .layout-label h3 { color: #C0392B; }
+
+  /* ---- OPTION C: Single surface no tabs ---- */
+  .mock-window-c {
+    background: #F8F5F0;
+    position: relative;
+    overflow: hidden;
+    height: 320px;
+    display: flex;
+    flex-direction: column;
+  }
+  .mock-window-c::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(circle, rgba(192,57,43,0.18) 1px, transparent 1px);
+    background-size: 18px 18px;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .header-c {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 22px 16px 10px;
+    border-bottom: 1px solid rgba(26,20,16,0.08);
+    position: relative;
+    z-index: 1;
+  }
+  .header-c .tl-row { display: flex; gap: 5px; }
+  .header-c .koe-title { font-family: 'Georgia', serif; font-size: 13px; color: #1A1410; }
+  .header-c .koe-title span { color: #C0392B; }
+  .header-c .nav-icons { display: flex; gap: 12px; font-size: 11px; color: #8C7B6A; }
+  .body-c {
+    flex: 1;
+    display: flex;
+    position: relative;
+    z-index: 1;
+  }
+  .center-c {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    padding: 16px;
+  }
+  .right-panel-c {
+    width: 110px;
+    border-left: 1px solid rgba(26,20,16,0.08);
+    padding: 12px 10px;
+    background: rgba(240,235,227,0.5);
+  }
+  .rp-heading {
+    font-family: 'Georgia', serif;
+    font-size: 8px;
+    color: #8C7B6A;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    border-bottom: 1px solid rgba(192,57,43,0.2);
+    padding-bottom: 5px;
+    margin-bottom: 8px;
+  }
+  .rp-row {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+  .rp-item {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+  }
+  .rp-key { font-family: 'SF Mono', monospace; font-size: 8px; color: #8C7B6A; }
+  .rp-val {
+    font-family: 'SF Mono', monospace;
+    font-size: 8px;
+    color: #1A1410;
+    border-bottom: 1px solid rgba(192,57,43,0.3);
+    padding-bottom: 2px;
+  }
+  .inkan-c {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    width: 28px;
+    height: 28px;
+    background: rgba(192,57,43,0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform: rotate(-4deg);
+    font-family: 'Georgia', serif;
+    font-size: 9px;
+    color: white;
+    line-height: 1.1;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+<p class="page-title" style="margin-bottom:4px">Koe — Main Window Layout</p>
+<h2>Which layout structure should we build?</h2>
+<p class="subtitle">All three use the full Japanese stationery aesthetic (ivory, dot-grid, vermilion, Inkan, tape marks). The difference is how the content is organized.</p>
+
+<div class="layouts">
+
+  <!-- OPTION A: Sidebar -->
+  <div class="layout-option" id="opt-a" onclick="selectOption('a')">
+    <div class="mock-window-a">
+      <div class="tape-bar"><div class="tape"></div><div class="tape"></div><div class="tape"></div></div>
+      <div class="traffic-lights">
+        <div class="tl tl-r"></div><div class="tl tl-y"></div><div class="tl tl-g"></div>
+        <span class="tl-title">Koe</span>
+      </div>
+      <div class="mock-body-a">
+        <div class="mock-sidebar-a">
+          <div class="sidebar-brand"><span class="koe-word">koe<span class="koe-dot">.</span></span></div>
+          <div class="sidebar-section-heading">Navigation</div>
+          <div class="sidebar-item active"><span class="dot"></span>Record</div>
+          <div class="sidebar-item"><span class="dot"></span>History</div>
+          <div class="sidebar-section-heading" style="margin-top:6px">Settings</div>
+          <div class="sidebar-item"><span class="dot"></span>Hotkey</div>
+          <div class="sidebar-item"><span class="dot"></span>Model</div>
+          <div class="sidebar-item"><span class="dot"></span>System</div>
+          <div class="inkan">声<br>音</div>
+        </div>
+        <div class="mock-content-a">
+          <div class="recording-pill">
+            <div class="waveform-mini">
+              <div class="wbar" style="height:6px"></div>
+              <div class="wbar" style="height:14px"></div>
+              <div class="wbar" style="height:10px"></div>
+              <div class="wbar" style="height:18px"></div>
+              <div class="wbar" style="height:8px"></div>
+              <div class="wbar" style="height:14px"></div>
+              <div class="wbar" style="height:6px"></div>
+            </div>
+            <div class="pill-meta">
+              <div class="pill-status">Buffer: Active</div>
+              <div class="pill-label">● REC</div>
+            </div>
+          </div>
+          <div class="terminal-meta">
+            <div class="tm-row"><span class="tm-key">Sample Rate</span><span class="tm-val">16kHz</span></div>
+            <div class="tm-row"><span class="tm-key">Model</span><span class="tm-val">base.en</span></div>
+            <div class="tm-row"><span class="tm-key">Hotkey</span><span class="tm-val">⌥ Space</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="layout-label">
+      <div>
+        <h3>A — Sidebar + Main Content</h3>
+        <p>Persistent nav sidebar. Settings inline as sub-items. More desktop-native feel.</p>
+      </div>
+      <div class="badge">Closest to brief</div>
+    </div>
+  </div>
+
+  <!-- OPTION B: Tabbed redesign -->
+  <div class="layout-option" id="opt-b" onclick="selectOption('b')">
+    <div class="mock-window-b">
+      <div class="tape-bar-b"><div class="tape-b"></div><div class="tape-b"></div><div class="tape-b"></div></div>
+      <div class="tab-bar-b">
+        <div class="tab-traffic">
+          <div class="tl tl-r"></div><div class="tl tl-y"></div><div class="tl tl-g"></div>
+        </div>
+        <div class="tab-b active">Record</div>
+        <div class="tab-b">History</div>
+        <div class="tab-b">Settings</div>
+        <div class="inkan-b" style="right:auto;left:auto;position:static;margin-left:auto;align-self:flex-end;margin-bottom:4px;margin-right:4px">声<br>音</div>
+      </div>
+      <div class="tab-b-content">
+        <div class="recording-pill" style="width:200px">
+          <div class="waveform-mini">
+            <div class="wbar" style="height:8px"></div>
+            <div class="wbar" style="height:16px"></div>
+            <div class="wbar" style="height:12px"></div>
+            <div class="wbar" style="height:18px"></div>
+            <div class="wbar" style="height:10px"></div>
+          </div>
+          <div class="pill-meta">
+            <div class="pill-status">Buffer: Active</div>
+            <div class="pill-label">● REC</div>
+          </div>
+        </div>
+        <div class="archival-rule"></div>
+        <div class="status-block-b">
+          <div class="sb-row"><span>Sample Rate</span><span class="sb-val">16kHz</span></div>
+          <div class="sb-row"><span>Model</span><span class="sb-val">base.en</span></div>
+          <div class="sb-row"><span>Status</span><span class="sb-val">Idle</span></div>
+        </div>
+        <div class="inkan-b" style="position:absolute">声<br>音</div>
+      </div>
+    </div>
+    <div class="layout-label">
+      <div>
+        <h3>B — Tabs Redesigned</h3>
+        <p>Keep the 3-tab structure, apply the new aesthetic throughout. Familiar macOS pattern.</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  let selected = null;
+  function selectOption(choice) {
+    if (selected) document.getElementById('opt-' + selected).classList.remove('selected');
+    selected = choice;
+    document.getElementById('opt-' + choice).classList.add('selected');
+    // Emit selection event if helper script is available
+    if (window.__emitSelection) window.__emitSelection(choice, 'Layout: ' + choice.toUpperCase());
+  }
+</script>
+</body>
+</html>

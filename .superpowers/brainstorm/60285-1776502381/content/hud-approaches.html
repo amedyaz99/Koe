@@ -1,0 +1,176 @@
+<style>
+  .pill-demo {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 28px;
+    padding: 32px 0 16px;
+  }
+
+  /* === OPTION A: Dark + Pulsing Glow === */
+  .hud-a {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #111111;
+    border-radius: 100px;
+    padding: 8px 16px 8px 10px;
+    width: fit-content;
+    box-shadow: 0 0 0 2px rgba(220,50,50,0.6), 0 0 18px 4px rgba(220,50,50,0.35);
+    animation: pulse-glow-a 1.4s ease-in-out infinite;
+  }
+  @keyframes pulse-glow-a {
+    0%, 100% { box-shadow: 0 0 0 2px rgba(220,50,50,0.6), 0 0 18px 4px rgba(220,50,50,0.35); }
+    50%       { box-shadow: 0 0 0 3px rgba(220,50,50,0.9), 0 0 28px 8px rgba(220,50,50,0.55); }
+  }
+  .dot-rec { width: 7px; height: 7px; border-radius: 50%; background: #E83333; animation: blink 1s step-end infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+  .wave-bars { display: flex; align-items: center; gap: 2px; height: 18px; }
+  .bar { width: 2.5px; background: #E8A020; border-radius: 2px; animation: wave 0.5s ease-in-out infinite alternate; }
+  .bar:nth-child(1) { height: 5px;  animation-delay: 0s; }
+  .bar:nth-child(2) { height: 12px; animation-delay: 0.07s; }
+  .bar:nth-child(3) { height: 18px; animation-delay: 0.14s; }
+  .bar:nth-child(4) { height: 10px; animation-delay: 0.21s; }
+  .bar:nth-child(5) { height: 14px; animation-delay: 0.28s; }
+  .bar:nth-child(6) { height: 8px;  animation-delay: 0.35s; }
+  .bar:nth-child(7) { height: 16px; animation-delay: 0.42s; }
+  @keyframes wave { from { transform: scaleY(0.5); } to { transform: scaleY(1); } }
+  .hud-label { color: rgba(255,255,255,0.45); font-size: 10px; font-family: monospace; letter-spacing: 0.05em; }
+
+  /* === OPTION B: Minimal Badge + Ring === */
+  .hud-b-wrap { position: relative; display: flex; align-items: center; justify-content: center; }
+  .hud-b-ring {
+    position: absolute;
+    width: 42px; height: 42px;
+    border-radius: 50%;
+    border: 2px solid rgba(220,50,50,0.7);
+    animation: ring-pulse 1.2s ease-out infinite;
+  }
+  @keyframes ring-pulse {
+    0%   { transform: scale(0.85); opacity: 0.9; }
+    100% { transform: scale(1.5); opacity: 0; }
+  }
+  .hud-b {
+    display: flex; align-items: center; gap: 6px;
+    background: #111; border-radius: 100px;
+    padding: 7px 12px;
+    width: fit-content;
+  }
+  .mic-icon { color: #E83333; font-size: 13px; }
+  .wave-bars-sm { display: flex; align-items: center; gap: 1.5px; height: 14px; }
+  .bars { width: 2px; background: #E8A020; border-radius: 2px; animation: wave 0.5s ease-in-out infinite alternate; }
+  .bars:nth-child(1) { height: 4px; animation-delay: 0s; }
+  .bars:nth-child(2) { height: 9px; animation-delay: 0.08s; }
+  .bars:nth-child(3) { height: 14px; animation-delay: 0.16s; }
+  .bars:nth-child(4) { height: 7px; animation-delay: 0.24s; }
+  .bars:nth-child(5) { height: 11px; animation-delay: 0.32s; }
+
+  /* === OPTION C: Frosted Tinted === */
+  .hud-c {
+    display: flex; align-items: center; gap: 8px;
+    background: rgba(30,10,10,0.88);
+    backdrop-filter: blur(12px);
+    border-radius: 100px;
+    padding: 8px 16px 8px 12px;
+    width: fit-content;
+    border: 1px solid rgba(220,50,50,0.3);
+    position: relative;
+    overflow: hidden;
+  }
+  .hud-c::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(135deg, rgba(220,50,50,0.12) 0%, transparent 60%);
+    animation: shimmer 2s ease-in-out infinite alternate;
+  }
+  @keyframes shimmer {
+    from { opacity: 0.5; }
+    to   { opacity: 1; }
+  }
+  .rec-badge {
+    display: flex; align-items: center; gap: 4px;
+    background: rgba(220,50,50,0.18);
+    border-radius: 100px;
+    padding: 2px 6px;
+  }
+  .rec-dot2 { width: 5px; height: 5px; border-radius: 50%; background: #E83333; animation: blink 1s step-end infinite; }
+  .rec-text { color: #E83333; font-size: 9px; font-family: monospace; font-weight: 600; letter-spacing: 0.1em; }
+  .wave-bars-c { display: flex; align-items: center; gap: 2px; height: 16px; }
+  .barc { width: 2.5px; background: rgba(255,255,255,0.7); border-radius: 2px; animation: wave 0.5s ease-in-out infinite alternate; }
+  .barc:nth-child(1) { height: 4px;  animation-delay: 0s; }
+  .barc:nth-child(2) { height: 10px; animation-delay: 0.07s; }
+  .barc:nth-child(3) { height: 16px; animation-delay: 0.14s; }
+  .barc:nth-child(4) { height: 8px;  animation-delay: 0.21s; }
+  .barc:nth-child(5) { height: 13px; animation-delay: 0.28s; }
+  .barc:nth-child(6) { height: 6px;  animation-delay: 0.35s; }
+
+  .size-note { font-size: 11px; color: #888; font-family: monospace; margin-top: 4px; }
+  .row { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+</style>
+
+<h2>HUD Pill — 3 Directions</h2>
+<p class="subtitle">All are compact (~34px tall). Click to select your preferred direction.</p>
+
+<div class="cards">
+
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#1a1a1a; padding: 32px 24px; display:flex; flex-direction:column; align-items:center; gap:16px;">
+      <div class="hud-a">
+        <div class="dot-rec"></div>
+        <div class="wave-bars">
+          <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+          <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
+        </div>
+        <div class="hud-label">REC</div>
+      </div>
+      <div class="size-note" style="color:#555;">~170 × 34pt</div>
+    </div>
+    <div class="card-body">
+      <h3>A — Dark pill + pulsing red glow</h3>
+      <p>Black background, animated outer glow ring breathes on the recording state. Very high contrast. Attention through the glow halo, not size.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#1a1a1a; padding: 40px 24px; display:flex; flex-direction:column; align-items:center; gap:16px;">
+      <div class="hud-b-wrap">
+        <div class="hud-b-ring"></div>
+        <div class="hud-b">
+          <span class="mic-icon">⏺</span>
+          <div class="wave-bars-sm">
+            <div class="bars"></div><div class="bars"></div><div class="bars"></div>
+            <div class="bars"></div><div class="bars"></div>
+          </div>
+        </div>
+      </div>
+      <div class="size-note" style="color:#555;">~130 × 32pt</div>
+    </div>
+    <div class="card-body">
+      <h3>B — Ultra compact + expanding ring</h3>
+      <p>Tiniest pill possible. A ripple ring radiates outward from it continuously. Even more minimal — like a sonar ping. Very Dynamic Island.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#1a1a1a; padding: 32px 24px; display:flex; flex-direction:column; align-items:center; gap:16px;">
+      <div class="hud-c">
+        <div class="rec-badge">
+          <div class="rec-dot2"></div>
+          <div class="rec-text">REC</div>
+        </div>
+        <div class="wave-bars-c">
+          <div class="barc"></div><div class="barc"></div><div class="barc"></div>
+          <div class="barc"></div><div class="barc"></div><div class="barc"></div>
+        </div>
+      </div>
+      <div class="size-note" style="color:#555;">~160 × 34pt</div>
+    </div>
+    <div class="card-body">
+      <h3>C — Frosted dark + tinted inner glow</h3>
+      <p>Dark frosted glass with a red inner shimmer gradient. Subtle badge label. Feels more macOS-native. Less aggressive, but still distinctive.</p>
+    </div>
+  </div>
+
+</div>

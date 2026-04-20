@@ -1,10 +1,23 @@
 import Foundation
 
-enum TranscriberError: Error {
+enum TranscriberError: Error, Equatable {
     case binaryNotFound
     case modelNotFound
     case whisperFailed(String)
     case emptyResult
+
+    static func == (lhs: TranscriberError, rhs: TranscriberError) -> Bool {
+        switch (lhs, rhs) {
+        case (.binaryNotFound, .binaryNotFound),
+             (.modelNotFound, .modelNotFound),
+             (.emptyResult, .emptyResult):
+            return true
+        case (.whisperFailed(let lhsMsg), .whisperFailed(let rhsMsg)):
+            return lhsMsg == rhsMsg
+        default:
+            return false
+        }
+    }
 }
 
 class WhisperTranscriber: @unchecked Sendable {
@@ -21,6 +34,9 @@ class WhisperTranscriber: @unchecked Sendable {
 
     private func run(audioURL: URL) throws -> String {
         guard let binaryURL = resolveBinary() else { throw TranscriberError.binaryNotFound }
+        guard FileManager.default.fileExists(atPath: binaryURL.path) else {
+            throw TranscriberError.binaryNotFound
+        }
         guard let modelURL = resolveModel() else { throw TranscriberError.modelNotFound }
 
         // Ensure bundled binary has executable permissions

@@ -10,11 +10,10 @@
 
 ---
 
-### Task 1: Create PasteManager
+### Task 1: Create PasteManager done
 
 **Files:**
-- Create: `Sources/Koe/PasteManager.swift`
-
+- Create: `Sources/Koe/PasteManager.swift
 - [ ] **Step 1: Create the file**
 
 ```swift
@@ -51,8 +50,8 @@ git commit -m "Add PasteManager: post cmd+V CGEvent to target PID"
 ```
 
 ---
-
-### Task 2: Add `.pasted` state to HUDWindow
+enod 
+### Task 2: Add `.pasted` state to HUDWindow done
 
 **Files:**
 - Modify: `Sources/Koe/HUD/HUDWindow.swift`
@@ -169,7 +168,7 @@ git commit -m "Add .pasted HUD state: green check + 'pasted' label"
 
 ---
 
-### Task 3: Wire auto-paste into AppState
+### Task 3: Wire auto-paste into AppState done
 
 **Files:**
 - Modify: `Sources/Koe/AppState.swift`
@@ -385,13 +384,13 @@ cd /Users/imad/Documents/Koe && swift run &
   - Verify: text does NOT auto-paste — HUD shows `✓ copied`
   - Verify: manually pressing ⌘V pastes the text (clipboard still populated)
 
-- [ ] **Step 4: Test app-switch edge case**
+- [ ] **(Step 4: Test app-switch edge case**
 
   - Focus TextEdit, press ⌥K to start recording
   - Switch to a different app during recording
   - Press ⌥K to stop
   - Verify: text pastes into TextEdit (the app active at hotkey press), not the app you switched to
-
+)
 - [ ] **Step 5: Kill the app**
 
 ```bash

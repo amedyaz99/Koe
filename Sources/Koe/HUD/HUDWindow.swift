@@ -9,6 +9,7 @@ enum HUDState: Equatable {
     case done(text: String)
     case pasted(text: String)
     case error
+    case binaryNotFound
 }
 
 // MARK: - State Holder
@@ -55,7 +56,7 @@ struct HUDView: View {
                 .font(.system(size: 14, weight: .semibold))
                 .foregroundStyle(Color(red: 0.235, green: 0.722, blue: 0.353))
                 .transition(.scale.combined(with: .opacity))
-        case .error:
+        case .error, .binaryNotFound:
             Text("✗")
                 .font(.system(size: 14, weight: .semibold))
                 .foregroundStyle(Color(red: 0.91, green: 0.2, blue: 0.2))
@@ -83,6 +84,10 @@ struct HUDView: View {
             Text("error")
                 .font(.system(size: 11, weight: .regular, design: .monospaced))
                 .foregroundStyle(Color.white)
+        case .binaryNotFound:
+            Text("whisper missing")
+                .font(.system(size: 10, weight: .regular, design: .monospaced))
+                .foregroundStyle(Color.white)
         }
     }
 
@@ -91,7 +96,7 @@ struct HUDView: View {
         case .recording:    return Color(red: 0.863, green: 0.2, blue: 0.2)
         case .transcribing: return Color(red: 0.392, green: 0.471, blue: 0.878)
         case .done, .pasted: return Color(red: 0.235, green: 0.722, blue: 0.353)
-        case .error:        return Color(red: 0.863, green: 0.2, blue: 0.2)
+        case .error, .binaryNotFound: return Color(red: 0.863, green: 0.2, blue: 0.2)
         }
     }
 }

@@ -98,8 +98,14 @@ class AppState: ObservableObject {
                         }
                         self.frontmostAppAtRecordStart = nil
                         self.scheduleHUDHide(after: 2.0)
-                    case .failure:
-                        self.failTranscription()
+                    case .failure(let error):
+                        if let transcriberError = error as? TranscriberError,
+                           transcriberError == .binaryNotFound {
+                            self.hud.show(state: .binaryNotFound)
+                            self.scheduleHUDHide(after: 2.0)
+                        } else {
+                            self.failTranscription()
+                        }
                     }
                 }
             }

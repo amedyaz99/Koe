@@ -1,0 +1,5 @@
+{"type":"server-started","port":59012,"host":"127.0.0.1","url_host":"localhost","url":"http://localhost:59012","screen_dir":"/Users/imad/Documents/Koe/.superpowers/brainstorm/48448-1776353395/content","state_dir":"/Users/imad/Documents/Koe/.superpowers/brainstorm/48448-1776353395/state"}
+{"type":"screen-added","file":"/Users/imad/Documents/Koe/.superpowers/brainstorm/48448-1776353395/content/layout-concept.html"}
+{"type":"screen-added","file":"/Users/imad/Documents/Koe/.superpowers/brainstorm/48448-1776353395/content/tabs-detail.html"}
+{"type":"screen-added","file":"/Users/imad/Documents/Koe/.superpowers/brainstorm/48448-1776353395/content/final-inkan.html"}
+{"type":"server-stopped","reason":"idle timeout"}
