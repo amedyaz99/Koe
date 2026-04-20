@@ -18,21 +18,35 @@ struct KoeApp: App {
                     .frame(width: 320, height: 450)
 
                 Divider()
+                    .background(KoeTheme.washiMuted.opacity(0.1))
 
-                Button("Settings...") {
-                    if settingsController == nil {
-                        settingsController = SettingsWindowController(appState: appState)
+                HStack(spacing: 24) {
+                    Button(action: {
+                        if settingsController == nil {
+                            settingsController = SettingsWindowController(appState: appState)
+                        }
+                        settingsController?.show()
+                    }) {
+                        Text("SETTINGS")
+                            .font(KoeTheme.monoTiny)
+                            .foregroundColor(KoeTheme.washiMuted)
                     }
-                    settingsController?.show()
-                }
-                .buttonStyle(.plain)
-                .padding(.vertical, 8)
+                    .buttonStyle(.plain)
 
-                Button("Quit") {
-                    NSApplication.shared.terminate(nil)
+                    Spacer()
+
+                    Button(action: {
+                        NSApplication.shared.terminate(nil)
+                    }) {
+                        Text("QUIT")
+                            .font(KoeTheme.monoTiny)
+                            .foregroundColor(KoeTheme.vermilion.opacity(0.7))
+                    }
+                    .buttonStyle(.plain)
                 }
-                .buttonStyle(.plain)
-                .padding(.bottom, 8)
+                .padding(.horizontal, 20)
+                .padding(.vertical, 12)
+                .background(KoeTheme.sumiInk)
             }
         } label: {
             Image(systemName: appState.isRecording ? "mic.fill" : "mic")

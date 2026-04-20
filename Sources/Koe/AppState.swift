@@ -34,7 +34,7 @@ class AppState: ObservableObject {
             onEscape: { [weak self] in
                 Task { @MainActor in
                     guard let self = self else { return }
-                    if self.isRecording { self.stopAndTranscribe() }
+                    if self.isRecording { self.cancelRecording() }
                 }
             }
         )
@@ -138,6 +138,14 @@ class AppState: ObservableObject {
                 }
             }
         }
+    }
+
+    private func cancelRecording() {
+        recorder.cancel()
+        isRecording = false
+        isTranscribing = false
+        frontmostAppAtRecordStart = nil
+        hud.hide()
     }
     
     private func failTranscription() {

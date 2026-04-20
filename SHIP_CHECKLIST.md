@@ -83,15 +83,15 @@ If the user denies Accessibility access, the hotkey silently does nothing. Users
 When someone opens the app for the first time they see a menu bar icon and nothing else. They won't know what to do.
 
 **Steps:**
-- [ ] Add a launch flag to `AppState` or use `@AppStorage("koe.hasCompletedOnboarding")` defaulting to `false`
-- [ ] On first launch, open a small centered window (not the main window) with:
+- [x] Add a launch flag to `AppState` or use `@AppStorage("koe.hasCompletedOnboarding")` defaulting to `false`
+- [x] On first launch, open a small centered window (not the main window) with:
   - App name + one-line description
   - "Grant Microphone Access" button → calls `AVCaptureDevice.requestAccess(for: .audio)`
   - "Grant Accessibility Access" button → opens System Settings (see Step 3 above)
   - The hotkey displayed large: `⌥ K` — "Press this anywhere to start recording"
   - A "Got it" button that sets `hasCompletedOnboarding = true` and closes the window
-- [ ] Make the window non-closable until both permissions are granted (or at least clearly warn)
-- [ ] Set `hasCompletedOnboarding = true` and never show again
+- [x] Make the window non-closable until both permissions are granted (or at least clearly warn)
+- [x] Set `hasCompletedOnboarding = true` and never show again
 
 ---
 

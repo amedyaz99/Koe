@@ -4,7 +4,7 @@ import AVFoundation
 
 @MainActor
 class OnboardingWindowController: NSObject, NSWindowDelegate {
-    private var window: NSWindow?
+    private var window: NSPanel?
     private let appState: AppState
 
     init(appState: AppState) {
@@ -16,26 +16,32 @@ class OnboardingWindowController: NSObject, NSWindowDelegate {
         guard window == nil else { return }
 
         let contentView = OnboardingView(appState: appState)
-            .frame(width: 420, height: 480)
+            .frame(width: 440, height: 520)
 
-        let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 420, height: 480),
-            styleMask: [.titled, .closable],
+        let panel = NSPanel(
+            contentRect: NSRect(x: 0, y: 0, width: 440, height: 520),
+            styleMask: [.titled, .fullSizeContentView],
             backing: .buffered,
             defer: false
         )
 
-        window.title = "Welcome to Koe"
-        window.contentView = NSHostingView(rootView: contentView)
-        window.center()
-        window.delegate = self
-        window.isReleasedWhenClosed = false
-        window.level = .floating
-        window.collectionBehavior = [.canJoinAllSpaces]
-        window.makeKeyAndOrderFront(nil)
+        panel.title = ""
+        panel.isMovableByWindowBackground = true
+        panel.titlebarAppearsTransparent = true
+        panel.titleVisibility = .hidden
+        panel.contentView = NSHostingView(rootView: contentView)
+        panel.center()
+        panel.delegate = self
+        panel.isReleasedWhenClosed = false
+        panel.level = .floating
+        panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
+        panel.backgroundColor = .clear
+        panel.isOpaque = false
+        panel.hasShadow = true
+        panel.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
 
-        self.window = window
+        self.window = panel
     }
 
     func close() {
@@ -44,13 +50,8 @@ class OnboardingWindowController: NSObject, NSWindowDelegate {
     }
 
     func windowShouldClose(_ sender: NSWindow) -> Bool {
-        // Allow closing, but don't complete onboarding if permissions not granted
-        // The view handles the logic for showing warnings
-        return true
-    }
-
-    func windowWillClose(_ notification: Notification) {
-        window = nil
+        // Only allow closing via the button in the UI
+        return false
     }
 }
 
@@ -62,25 +63,29 @@ struct OnboardingView: View {
 
     var body: some View {
         ZStack {
-            KoeTheme.sumiInk.ignoresSafeArea()
+            ContinuousRoundedRectangle(cornerRadius: 24)
+                .fill(KoeTheme.sumiInk)
+                .shadow(color: Color.black.opacity(0.3), radius: 20, x: 0, y: 10)
 
             VStack(spacing: 0) {
                 // Header
-                VStack(spacing: 8) {
+                VStack(spacing: 12) {
+                    InkanStamp(size: 44)
+                        .padding(.top, 40)
+                    
                     HStack(alignment: .lastTextBaseline, spacing: 2) {
                         Text("Koe")
-                            .font(.system(size: 36, weight: .light))
+                            .font(.system(size: 40, weight: .light))
                             .foregroundColor(KoeTheme.washiPaper)
                         Text(".")
-                            .font(.system(size: 36, weight: .light))
+                            .font(.system(size: 40, weight: .light))
                             .foregroundColor(KoeTheme.vermilion)
                     }
                     Text("voice → clipboard")
                         .font(KoeTheme.monoSmall)
                         .foregroundColor(KoeTheme.washiMuted)
-                        .tracking(1.5)
+                        .tracking(2.0)
                 }
-                .padding(.top, 32)
 
                 Spacer()
 
@@ -88,65 +93,79 @@ struct OnboardingView: View {
                 VStack(spacing: 16) {
                     permissionRow(
                         icon: "mic.fill",
-                        title: "Microphone",
-                        description: "Required to record your voice",
+                        title: "Microphone Access",
+                        description: "Used to record audio for transcription",
                         granted: microphoneGranted,
                         action: requestMicrophoneAccess
                     )
 
                     permissionRow(
                         icon: "keyboard.fill",
-                        title: "Accessibility",
-                        description: "Required for global hotkey",
+                        title: "Accessibility API",
+                        description: "Required to detect the global hotkey",
                         granted: accessibilityGranted,
-                        action: appState.hotkeyManager?.openAccessibilitySettings ?? {}
+                        action: {
+                            NSHapticFeedbackManager.defaultPerformer.perform(.generic, performanceTime: .now)
+                            appState.hotkeyManager?.openAccessibilitySettings()
+                        }
                     )
                 }
-                .padding(.horizontal, 24)
+                .padding(.horizontal, 32)
 
                 Spacer()
 
                 // Hotkey Display
-                VStack(spacing: 12) {
+                VStack(spacing: 14) {
                     Text(HotkeyConfig.current.displayString)
-                        .font(.system(size: 48, weight: .light, design: .monospaced))
+                        .font(.system(size: 52, weight: .light, design: .monospaced))
                         .foregroundColor(KoeTheme.washiPaper)
+                        .padding(.horizontal, 24)
+                        .padding(.vertical, 8)
+                        .background(
+                            ContinuousRoundedRectangle(cornerRadius: 12)
+                                .stroke(KoeTheme.vermilion.opacity(0.3), lineWidth: 1)
+                        )
 
                     Text("Press this anywhere to start recording")
-                        .font(KoeTheme.monoSmall)
-                        .foregroundColor(KoeTheme.washiMuted)
-                }
-                .padding(.vertical, 24)
-
-                // Warning (if skipping without permissions)
-                if showPermissionWarning {
-                    Text("Without these permissions, Koe won't work properly")
                         .font(KoeTheme.monoTiny)
-                        .foregroundColor(KoeTheme.vermilion)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal, 24)
-                        .padding(.bottom, 8)
+                        .foregroundColor(KoeTheme.washiMuted)
+                        .textCase(.uppercase)
+                        .tracking(1.0)
                 }
+                .padding(.bottom, 40)
 
-                // Got It Button
-                Button(action: handleGotIt) {
-                    HStack(spacing: 8) {
-                        Text("Got it")
-                            .font(KoeTheme.monoSmall)
-                        if !allPermissionsGranted {
-                            Image(systemName: "exclamationmark.triangle.fill")
-                                .font(.system(size: 10))
-                        }
+                // Warning / Got It Button
+                VStack(spacing: 12) {
+                    if showPermissionWarning && !allPermissionsGranted {
+                        Text("Permissions required for Koe to function.")
+                            .font(KoeTheme.monoTiny)
+                            .foregroundColor(KoeTheme.vermilion)
+                            .transition(.opacity.combined(with: .move(edge: .bottom)))
                     }
+
+                    Button(action: handleGotIt) {
+                        Text("Complete Setup")
+                            .font(KoeTheme.monoSmall)
+                            .tracking(1.0)
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(OnboardingButtonStyle(
+                        isHighlighted: allPermissionsGranted
+                    ))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(KoeTheme.vermilion, lineWidth: 2)
+                            .scaleEffect(allPermissionsGranted ? 1.05 : 1.0)
+                            .opacity(allPermissionsGranted ? 0 : 0) // Hidden by default, but useful for pulse if we wanted
+                    )
+                    .padding(.horizontal, 32)
+                    .padding(.bottom, 40)
                 }
-                .buttonStyle(OnboardingButtonStyle(
-                    backgroundColor: allPermissionsGranted ? KoeTheme.vermilion : KoeTheme.washiMuted.opacity(0.3),
-                    foregroundColor: allPermissionsGranted ? KoeTheme.washiPaper : KoeTheme.washiPaper.opacity(0.6)
-                ))
-                .disabled(!allPermissionsGranted && !showPermissionWarning)
-                .padding(.bottom, 32)
             }
         }
+        .animation(KoeTheme.spring, value: microphoneGranted)
+        .animation(KoeTheme.spring, value: accessibilityGranted)
+        .animation(KoeTheme.spring, value: showPermissionWarning)
         .onAppear {
             checkPermissions()
         }
@@ -160,16 +179,14 @@ struct OnboardingView: View {
     }
 
     private func checkPermissions() {
-        // Check microphone
         microphoneGranted = AVCaptureDevice.authorizationStatus(for: .audio) == .authorized
-
-        // Check accessibility
-        accessibilityGranted = appState.hotkeyManager?.isAccessibilityTrusted ?? false
+        accessibilityGranted = AXIsProcessTrusted()
     }
 
     private func requestMicrophoneAccess() {
+        NSHapticFeedbackManager.defaultPerformer.perform(.generic, performanceTime: .now)
         AVCaptureDevice.requestAccess(for: .audio) { granted in
-            DispatchQueue.main.async {
+            Task { @MainActor in
                 microphoneGranted = granted
             }
         }
@@ -177,12 +194,12 @@ struct OnboardingView: View {
 
     private func handleGotIt() {
         if allPermissionsGranted {
+            NSHapticFeedbackManager.defaultPerformer.perform(.levelChange, performanceTime: .now)
             appState.completeOnboarding()
         } else {
-            showPermissionWarning = true
-            // Still allow them to proceed after showing warning
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                appState.completeOnboarding()
+            NSHapticFeedbackManager.defaultPerformer.perform(.alignment, performanceTime: .now)
+            withAnimation {
+                showPermissionWarning = true
             }
         }
     }
@@ -196,13 +213,16 @@ struct OnboardingView: View {
         action: @escaping () -> Void
     ) -> some View {
         HStack(spacing: 16) {
-            // Icon
-            Image(systemName: icon)
-                .font(.system(size: 20))
-                .foregroundColor(granted ? KoeTheme.vermilion : KoeTheme.washiMuted)
-                .frame(width: 24)
+            ZStack {
+                Circle()
+                    .fill(granted ? KoeTheme.vermilion.opacity(0.1) : KoeTheme.washiMuted.opacity(0.1))
+                    .frame(width: 40, height: 40)
+                
+                Image(systemName: icon)
+                    .font(.system(size: 16))
+                    .foregroundColor(granted ? KoeTheme.vermilion : KoeTheme.washiMuted)
+            }
 
-            // Content
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
                     .font(KoeTheme.monoSmall)
@@ -214,36 +234,48 @@ struct OnboardingView: View {
 
             Spacer()
 
-            // Status / Button
             if granted {
-                Image(systemName: "checkmark.circle.fill")
+                Image(systemName: "checkmark")
+                    .font(.system(size: 14, weight: .bold))
                     .foregroundColor(KoeTheme.vermilion)
-                    .font(.system(size: 18))
             } else {
-                Button("Grant →", action: action)
-                    .font(KoeTheme.monoSmall)
+                Button("Grant", action: action)
+                    .font(KoeTheme.monoTiny)
                     .foregroundColor(KoeTheme.vermilion)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(
+                        ContinuousRoundedRectangle(cornerRadius: 6)
+                            .stroke(KoeTheme.vermilion, lineWidth: 1)
+                    )
                     .buttonStyle(.plain)
             }
         }
-        .padding(16)
+        .padding(12)
         .background(KoeTheme.sumiInkLight)
-        .cornerRadius(8)
+        .cornerRadius(12)
     }
 }
 
 private struct OnboardingButtonStyle: ButtonStyle {
-    let backgroundColor: Color
-    let foregroundColor: Color
+    let isHighlighted: Bool
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .foregroundColor(foregroundColor)
-            .padding(.horizontal, 32)
-            .padding(.vertical, 12)
-            .background(backgroundColor)
-            .cornerRadius(8)
+            .foregroundColor(isHighlighted ? KoeTheme.washiPaper : KoeTheme.washiMuted)
+            .padding(.vertical, 14)
+            .background(
+                ZStack {
+                    if isHighlighted {
+                        KoeTheme.vermilion
+                    } else {
+                        KoeTheme.sumiInkLight
+                    }
+                }
+            )
+            .cornerRadius(12)
+            .opacity(configuration.isPressed ? 0.9 : 1.0)
             .scaleEffect(configuration.isPressed ? 0.98 : 1.0)
-            .animation(.easeInOut(duration: 0.1), value: configuration.isPressed)
     }
 }
+

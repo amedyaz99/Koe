@@ -200,6 +200,15 @@ struct SettingsTab: View {
             }
 
             content()
+                .padding(16)
+                .background(
+                    ContinuousRoundedRectangle(cornerRadius: 12)
+                        .fill(KoeTheme.sumiInkLight.opacity(0.8))
+                        .overlay(
+                            ContinuousRoundedRectangle(cornerRadius: 12)
+                                .stroke(KoeTheme.washiMuted.opacity(0.18), lineWidth: 1)
+                        )
+                )
         }
         .padding(.horizontal, 24)
         .padding(.top, 32)

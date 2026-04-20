@@ -39,6 +39,18 @@ class AudioRecorder {
         self.tempURL = nil
     }
 
+    func cancel() {
+        guard let engine else { return }
+        engine.inputNode.removeTap(onBus: 0)
+        engine.stop()
+        outputFile = nil
+        if let tempURL {
+            try? FileManager.default.removeItem(at: tempURL)
+        }
+        self.engine = nil
+        self.tempURL = nil
+    }
+
     private func beginRecording() {
         let newEngine = AVAudioEngine()
         let input = newEngine.inputNode

@@ -26,7 +26,13 @@ struct HistoryTab: View {
             footer
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(KoeTheme.sumiInk)
+        .background(
+            LinearGradient(
+                colors: [KoeTheme.sumiInk, Color.black.opacity(0.92)],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+        )
     }
 
     private var header: some View {
@@ -56,20 +62,10 @@ struct HistoryTab: View {
             InkanStamp(size: 24)
             
             Spacer()
-            
-            Button(action: {
-                NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
-            }) {
-                Image(systemName: "gearshape.fill")
-                    .font(.system(size: 14))
-                    .foregroundColor(KoeTheme.washiMuted)
-            }
-            .buttonStyle(.plain)
-            .help("Settings")
         }
         .padding(.horizontal, 20)
         .padding(.vertical, 12)
-        .background(KoeTheme.sumiInk.opacity(0.8))
+        .background(KoeTheme.sumiInk.opacity(0.9))
     }
 
     private var emptyState: some View {
@@ -129,7 +125,11 @@ private struct HistoryEntryRow: View {
         .padding(16)
         .background(
             ContinuousRoundedRectangle(cornerRadius: 12)
-                .fill(isHovered ? KoeTheme.sumiInkLight : Color.clear)
+                .fill(isHovered ? KoeTheme.sumiInkLight.opacity(0.88) : KoeTheme.sumiInkLight.opacity(0.66))
+        )
+        .overlay(
+            ContinuousRoundedRectangle(cornerRadius: 12)
+                .stroke(KoeTheme.washiMuted.opacity(isHovered ? 0.16 : 0.08), lineWidth: 1)
         )
         .overlay(
             ContinuousRoundedRectangle(cornerRadius: 12)
