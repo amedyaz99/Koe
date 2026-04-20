@@ -30,7 +30,10 @@ class OnboardingWindowController: NSObject, NSWindowDelegate {
         window.center()
         window.delegate = self
         window.isReleasedWhenClosed = false
+        window.level = .floating
+        window.collectionBehavior = [.canJoinAllSpaces]
         window.makeKeyAndOrderFront(nil)
+        NSApp.activate(ignoringOtherApps: true)
 
         self.window = window
     }

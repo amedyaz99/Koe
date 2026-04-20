@@ -5,7 +5,7 @@ Tackle these in order — each one builds on the last.
 
 ---
 
-## 1. Bundle whisper.cpp + model
+## 1. Bundle whisper.cpp + model done
 **Effort: ~1 day**
 
 Right now users need to install whisper-cli via Homebrew and download the model manually. That kills non-technical users immediately.
@@ -36,7 +36,7 @@ Right now users need to install whisper-cli via Homebrew and download the model 
 
 ---
 
-## 2. Fix silent failure when whisper isn't found
+## 2. Fix silent failure when whisper isn't found done
 
 Currently if the binary is missing, the HUD just shows `error` with no explanation. Users will think the app is broken.
 
@@ -58,7 +58,7 @@ Currently if the binary is missing, the HUD just shows `error` with no explanati
 
 ---
 
-## 3. Fix silent Accessibility permission failure
+## 3. Fix silent Accessibility permission failure done
 **Effort: ~half a day**
 
 If the user denies Accessibility access, the hotkey silently does nothing. Users will think the app is broken.
