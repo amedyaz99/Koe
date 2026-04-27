@@ -6,9 +6,12 @@ struct SettingsTab: View {
     @EnvironmentObject var appState: AppState
     @AppStorage("koe.launchAtLogin") private var launchAtLogin = false
     @AppStorage("koe.autoPaste") private var autoPasteEnabled = true
+    @AppStorage("koe.recordingMode") private var recordingModeRaw: String = "toggle"
+    @AppStorage("koe.microphoneUID") private var selectedMicUID: String = ""
     @State private var currentConfig = HotkeyConfig.current
     @State private var isRecordingHotkey = false
     @State private var monitor: Any?
+    @State private var availableDevices: [MicrophoneDevice] = []
 
     var body: some View {
         ScrollView(.vertical, showsIndicators: false) {
@@ -17,25 +20,65 @@ struct SettingsTab: View {
                     heading: "Hotkey",
                     japanese: "ショートカット"
                 ) {
+                    VStack(spacing: 12) {
+                        HStack {
+                            Text("Trigger")
+                                .font(KoeTheme.monoSmall)
+                                .foregroundColor(KoeTheme.washiPaper)
+
+                            Spacer()
+
+                            HotkeyBadge(
+                                config: currentConfig,
+                                isRecording: isRecordingHotkey,
+                                onTap: toggleHotkeyRecording
+                            )
+                        }
+
+                        if isRecordingHotkey {
+                            Text("Press a key combination, or Escape to cancel.")
+                                .font(KoeTheme.monoTiny)
+                                .foregroundColor(KoeTheme.washiMuted)
+                        }
+
+                        Divider()
+                            .background(KoeTheme.washiMuted.opacity(0.15))
+
+                        HStack {
+                            Text("Mode")
+                                .font(KoeTheme.monoSmall)
+                                .foregroundColor(KoeTheme.washiPaper)
+                            Spacer()
+                            ModeControl(selection: $recordingModeRaw)
+                        }
+
+                        if recordingModeRaw == "pushToTalk" {
+                            Text("Hold the hotkey while speaking — release to transcribe.")
+                                .font(KoeTheme.monoTiny)
+                                .foregroundColor(KoeTheme.washiMuted)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        }
+                    }
+                }
+
+                settingsSection(
+                    heading: "Input",
+                    japanese: "入力"
+                ) {
                     HStack {
-                        Text("Trigger")
+                        Text("Microphone")
                             .font(KoeTheme.monoSmall)
                             .foregroundColor(KoeTheme.washiPaper)
-
                         Spacer()
-
-                        HotkeyBadge(
-                            config: currentConfig,
-                            isRecording: isRecordingHotkey,
-                            onTap: toggleHotkeyRecording
-                        )
-                    }
-
-                    if isRecordingHotkey {
-                        Text("Press a key combination, or Escape to cancel.")
-                            .font(KoeTheme.monoTiny)
-                            .foregroundColor(KoeTheme.washiMuted)
-                            .padding(.top, 4)
+                        Picker("", selection: $selectedMicUID) {
+                            ForEach(availableDevices) { device in
+                                Text(device.name).tag(device.uid)
+                            }
+                        }
+                        .pickerStyle(.menu)
+                        .frame(maxWidth: 180)
+                        .labelsHidden()
+                        .tint(KoeTheme.washiPaper)
                     }
                 }
 
@@ -159,6 +202,9 @@ struct SettingsTab: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(KoeTheme.sumiInk)
+        .onAppear {
+            availableDevices = MicrophoneDevice.allInputDevices()
+        }
         .onReceive(NotificationCenter.default.publisher(for: .hotkeyConfigChanged)) { _ in
             currentConfig = HotkeyConfig.current
         }
@@ -251,6 +297,52 @@ struct SettingsTab: View {
         } catch {
             print("Failed to update launch at login: \(error)")
         }
+    }
+}
+
+private struct ModeControl: View {
+    @Binding var selection: String
+
+    private let options: [(label: String, tag: String)] = [
+        ("Toggle", "toggle"),
+        ("Push to talk", "pushToTalk"),
+    ]
+
+    var body: some View {
+        HStack(spacing: 2) {
+            ForEach(options, id: \.tag) { option in
+                segment(option.label, tag: option.tag)
+            }
+        }
+        .padding(3)
+        .background(Color(red: 0.08, green: 0.08, blue: 0.08))
+        .clipShape(ContinuousRoundedRectangle(cornerRadius: 9))
+        .overlay(
+            ContinuousRoundedRectangle(cornerRadius: 9)
+                .stroke(KoeTheme.washiMuted.opacity(0.18), lineWidth: 1)
+        )
+    }
+
+    private func segment(_ label: String, tag: String) -> some View {
+        let isSelected = selection == tag
+        return Button(action: {
+            withAnimation(KoeTheme.ease) { selection = tag }
+        }) {
+            Text(label)
+                .font(.system(size: 12, weight: isSelected ? .medium : .regular, design: .monospaced))
+                .foregroundColor(isSelected ? KoeTheme.washiPaper : KoeTheme.washiMuted.opacity(0.75))
+                .padding(.horizontal, 12)
+                .padding(.vertical, 5)
+                .background(
+                    ContinuousRoundedRectangle(cornerRadius: 6)
+                        .fill(isSelected ? KoeTheme.sumiInkLight : Color.clear)
+                        .overlay(
+                            ContinuousRoundedRectangle(cornerRadius: 6)
+                                .stroke(isSelected ? KoeTheme.washiMuted.opacity(0.22) : Color.clear, lineWidth: 1)
+                        )
+                )
+        }
+        .buttonStyle(.plain)
     }
 }
 

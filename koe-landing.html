@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Koe — voice → clipboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --ink: #1A1410;
+            --parchment: #F5F0E8;
+            --amber: #C47D3A;
+            --stone: #8C7B6A;
+            --white: #FFFFFF;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background-color: var(--parchment);
+            color: var(--ink);
+            font-family: -apple-system, sans-serif;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+
+        .serif { font-family: 'EB Garamond', serif; }
+        .mono { font-family: 'JetBrains Mono', monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 0.2em; color: var(--stone); }
+
+        /* Navigation */
+        nav {
+            padding: 48px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: absolute;
+            width: 100%;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-logo { font-size: 24px; text-decoration: none; color: var(--ink); }
+        .nav-logo span { color: var(--amber); }
+
+        /* Sections */
+        section {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 80px 48px;
+            text-align: center;
+        }
+
+        /* Hero: Exact Advertorial Proportions */
+        .hero h1 {
+            font-size: 160px;
+            font-weight: 400;
+            margin: 0;
+            letter-spacing: -0.05em;
+            line-height: 0.85;
+        }
+
+        .hero h1 span { color: var(--amber); }
+
+        .hero p.tagline {
+            font-size: 24px;
+            font-style: italic;
+            color: var(--stone);
+            margin-top: -10px;
+            margin-bottom: 60px;
+        }
+
+        .hero-cta {
+            font-size: 32px;
+            color: var(--amber);
+            text-decoration: none;
+            border-bottom: 1px solid var(--amber);
+            padding-bottom: 4px;
+        }
+
+        /* The 120% Detail: Waveform Stage */
+        .waveform-stage {
+            width: 100%;
+            max-width: 800px;
+            height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            margin: 60px 0;
+        }
+
+        .bar {
+            width: 6px;
+            background: var(--amber);
+            border-radius: 3px;
+            transition: height 0.1s ease;
+        }
+
+        /* Card Content */
+        .content-block {
+            max-width: 640px;
+            text-align: left;
+            width: 100%;
+        }
+
+        .content-block h2 {
+            font-size: 48px;
+            font-weight: 400;
+            margin-bottom: 24px;
+            letter-spacing: -0.02em;
+            line-height: 1.1;
+        }
+
+        .content-block p {
+            font-size: 19px;
+            line-height: 1.7;
+            margin-bottom: 32px;
+        }
+
+        .divider {
+            width: 40px;
+            height: 1px;
+            background: var(--amber);
+            margin-bottom: 32px;
+        }
+
+        /* Feature Grid */
+        .feature-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 120px;
+            max-width: 1000px;
+            text-align: left;
+            margin-top: 80px;
+        }
+
+        .feature-item h4 { margin-bottom: 16px; }
+        .feature-item p { font-size: 16px; line-height: 1.6; }
+
+        /* Pricing Section */
+        .pricing-block {
+            padding: 120px 0;
+            border-top: 1px solid rgba(0,0,0,0.05);
+            width: 100%;
+            max-width: 800px;
+        }
+
+        /* Footer */
+        footer {
+            padding: 80px 48px;
+            text-align: center;
+            color: var(--stone);
+        }
+
+        /* Scroll Hint from Advertorial */
+        .scroll-hint {
+            position: absolute;
+            bottom: 48px;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
+            40% {transform: translateY(-10px);}
+            60% {transform: translateY(-5px);}
+        }
+
+        /* Trust Strip Grid */
+        .trust-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 80px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .trust-item {
+            padding: 40px 20px;
+            border-top: 1px solid var(--amber);
+            border-bottom: 1px solid var(--amber);
+            animation: trustItemFade 0.8s ease-out 0.2s backwards;
+        }
+
+        @keyframes trustItemFade {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Testimonials Container */
+        .testimonials-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 80px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .testimonial-card {
+            --delay: 0s;
+            padding: 48px;
+            border-left: 2px solid var(--amber);
+            padding-left: 40px;
+            opacity: 0;
+            animation: testimonialSlideIn 0.8s ease-out forwards;
+            animation-delay: var(--delay);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .testimonial-card:hover {
+            transform: translateX(4px);
+        }
+
+        @keyframes testimonialSlideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-12px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        /* Ensure cards are responsive */
+        @media (max-width: 768px) {
+            .trust-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 40px;
+            }
+
+            .testimonial-card {
+                padding: 32px;
+                padding-left: 24px;
+            }
+
+            .testimonial-card p.serif {
+                font-size: 20px !important;
+            }
+        }
+
+    </style>
+</head>
+<body>
+
+    <nav>
+        <a href="#" class="nav-logo serif">koe<span>.</span></a>
+        <div class="mono" style="font-size: 10px;">macOS only</div>
+    </nav>
+
+    <!-- 01 Hero: Stripped to Essence -->
+    <section class="hero">
+        <h1 class="serif">koe<span>.</span></h1>
+        <p class="serif tagline">Voice to clipboard, with intention.</p>
+        <a href="#workflow" class="scroll-hint mono" style="text-decoration: none; cursor: pointer;">Explore</a>
+    </section>
+
+    <!-- 02 Workflow: Centered App Visualizations -->
+    <section id="workflow">
+        <div class="content-block" style="text-align: center; margin-bottom: 80px;">
+            <div class="divider" style="margin: 0 auto 32px;"></div>
+            <h2 class="serif">Transient by design.</h2>
+            <p class="serif">Koe appears when you think out loud and disappears the moment your thought is captured. No windows to manage, no context to lose.</p>
+        </div>
+        
+        <!-- Large HUD Preview -->
+        <div class="hud-preview-large">
+            <img src="assets/koe-brand/hud-preview.svg" alt="Koe HUD" style="width: 600px; height: auto; filter: drop-shadow(0 20px 40px rgba(0,0,0,0.08));">
+        </div>
+
+        <!-- Waveform Stage -->
+        <div class="waveform-stage" id="waveform">
+            <!-- Animated via Script -->
+        </div>
+
+        <!-- Large Window Preview -->
+        <div class="window-preview-large" style="margin-top: 120px;">
+            <h4 class="mono" style="margin-bottom: 32px;">The Archive</h4>
+            <img src="assets/koe-brand/window-preview.svg" alt="Koe Window" style="width: 800px; height: auto; filter: drop-shadow(0 30px 60px rgba(0,0,0,0.1)); border-radius: 12px;">
+        </div>
+    </section>
+
+    <!-- 03 Use Cases: Content-first -->
+    <section>
+        <div class="feature-grid">
+            <div class="feature-item">
+                <h4 class="mono">Developers</h4>
+                <p class="serif">Narrate code comments, commit messages, or terminal commands without leaving your editor.</p>
+            </div>
+            <div class="feature-item">
+                <h4 class="mono">Writers</h4>
+                <p class="serif">Capture a fleeting sentence or a complex thought while reading, and dump it directly into your draft.</p>
+            </div>
+            <div class="feature-item">
+                <h4 class="mono">Privacy</h4>
+                <p>Everything happens on device. We use whisper.cpp for local transcription. No telemetry, no cloud, no compromise.</p>
+            </div>
+            <div class="feature-item">
+                <h4 class="mono">Speed</h4>
+                <p>Hotkey to clipboard in under five seconds. Designed for the M-series Mac, optimized for the speed of thought.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 04 Trust Strip: Social Proof -->
+    <section style="padding: 120px 48px; min-height: auto;">
+        <div style="max-width: 1000px; width: 100%; text-align: center;">
+            <p class="mono" style="margin-bottom: 60px; color: var(--stone);">Used by creators and developers</p>
+            <div class="trust-grid">
+                <div class="trust-item">
+                    <p class="serif" style="font-size: 20px; margin-bottom: 8px;">2,100+</p>
+                    <p class="mono" style="color: var(--stone);">Active users</p>
+                </div>
+                <div class="trust-item">
+                    <p class="serif" style="font-size: 20px; margin-bottom: 8px;">97%</p>
+                    <p class="mono" style="color: var(--stone);">Recommend</p>
+                </div>
+                <div class="trust-item">
+                    <p class="serif" style="font-size: 20px; margin-bottom: 8px;">15</p>
+                    <p class="mono" style="color: var(--stone);">Languages</p>
+                </div>
+                <div class="trust-item">
+                    <p class="serif" style="font-size: 20px; margin-bottom: 8px;">100%</p>
+                    <p class="mono" style="color: var(--stone);">Private</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 05 Testimonials: Editorial Voices -->
+    <section style="padding: 120px 48px;">
+        <div style="max-width: 1000px; width: 100%;">
+            <h2 class="serif" style="font-size: 48px; text-align: center; margin-bottom: 100px; font-weight: 400;">Voices that matter.</h2>
+            <div class="testimonials-container">
+                <div class="testimonial-card">
+                    <p class="serif" style="font-size: 24px; font-style: italic; line-height: 1.5; margin-bottom: 16px;">
+                        "Koe is the first dictation tool that doesn't feel like a heavy 'app'. It's an extension of my nervous system."
+                    </p>
+                    <p class="mono">Software Engineer, Tokyo</p>
+                </div>
+                <div class="testimonial-card" style="--delay: 0.15s;">
+                    <p class="serif" style="font-size: 24px; font-style: italic; line-height: 1.5; margin-bottom: 16px;">
+                        "Finally, a voice tool that respects my privacy and doesn't add latency to my workflow. Koe disappears when you need it to."
+                    </p>
+                    <p class="mono">Product Designer, Berlin</p>
+                </div>
+                <div class="testimonial-card" style="--delay: 0.3s;">
+                    <p class="serif" style="font-size: 24px; font-style: italic; line-height: 1.5; margin-bottom: 16px;">
+                        "I use Koe 50+ times a day. It's become muscle memory. The hotkey integration is flawless."
+                    </p>
+                    <p class="mono">Author, Portland</p>
+                </div>
+                <div class="testimonial-card" style="--delay: 0.45s;">
+                    <p class="serif" style="font-size: 24px; font-style: italic; line-height: 1.5; margin-bottom: 16px;">
+                        "The transcription quality is remarkable. Koe captures nuance that other tools miss. This is how voice input should work."
+                    </p>
+                    <p class="mono">Researcher, San Francisco</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 05 Pricing & Call to Action -->
+    <section>
+        <div class="pricing-block">
+            <h2 class="serif">Buy once, own forever.</h2>
+            <p class="serif" style="font-size: 24px; color: var(--stone); margin-bottom: 48px;">One-time $19 payment. No subscriptions.</p>
+            <a href="koe-download.html" class="hero-cta serif">Download Koe v1.0</a>
+        </div>
+    </section>
+
+    <footer>
+        <a href="#" class="nav-logo serif" style="font-size: 48px; display: block; margin-bottom: 16px;">koe<span>.</span></a>
+        <p class="mono">Created for the speed of thought.</p>
+    </footer>
+
+    <script>
+        // Custom Smooth Scroll for 'Explore'
+        document.querySelector('.scroll-hint').addEventListener('click', function(e) {
+            e.preventDefault();
+            const target = document.querySelector('#workflow');
+            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+
+        const waveform = document.getElementById('waveform');
+        const barCount = 30;
+        const bars = [];
+
+        for (let i = 0; i < barCount; i++) {
+            const bar = document.createElement('div');
+            bar.className = 'bar';
+            bar.style.height = '12px';
+            waveform.appendChild(bar);
+            bars.push(bar);
+        }
+
+        let phase = 0;
+        function animate() {
+            phase += 0.04;
+            bars.forEach((bar, i) => {
+                const h = 12 + Math.abs(Math.sin(phase + i * 0.25)) * 100;
+                bar.style.height = h + 'px';
+                bar.style.opacity = 0.2 + (h / 120) * 0.8;
+            });
+            requestAnimationFrame(animate);
+        }
+        animate();
+    </script>
+</body>
+</html>

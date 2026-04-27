@@ -3,6 +3,11 @@ import AppKit
 import Combine
 import AVFoundation
 
+enum RecordingMode: String {
+    case toggle = "toggle"
+    case pushToTalk = "pushToTalk"
+}
+
 @MainActor
 class AppState: ObservableObject {
     @Published var isRecording = false
@@ -17,6 +22,11 @@ class AppState: ObservableObject {
 
     @AppStorage("koe.autoPaste") private var autoPasteEnabled = true
     @AppStorage("koe.hasCompletedOnboarding") private var hasCompletedOnboarding = false
+
+    private var recordingMode: RecordingMode {
+        let raw = UserDefaults.standard.string(forKey: "koe.recordingMode") ?? "toggle"
+        return RecordingMode(rawValue: raw) ?? .toggle
+    }
     private var frontmostAppAtRecordStart: NSRunningApplication?
     private var onboardingController: OnboardingWindowController?
 
@@ -28,13 +38,18 @@ class AppState: ObservableObject {
         self.hotkeyManager = HotkeyManager(
             onTrigger: { [weak self] in
                 Task { @MainActor in
-                    self?.toggleRecording()
+                    self?.handleHotkeyTrigger()
                 }
             },
             onEscape: { [weak self] in
                 Task { @MainActor in
                     guard let self = self else { return }
                     if self.isRecording { self.cancelRecording() }
+                }
+            },
+            onRelease: { [weak self] in
+                Task { @MainActor in
+                    self?.handleHotkeyRelease()
                 }
             }
         )
@@ -57,23 +72,33 @@ class AppState: ObservableObject {
         onboardingController = nil
     }
     
+    // Called by RecordTab button — always toggle regardless of recording mode
     func toggleRecording() {
         guard !isTranscribing else { return }
+        NSHapticFeedbackManager.defaultPerformer.perform(.generic, performanceTime: .now)
+        if isRecording { stopAndTranscribe() } else { startRecording() }
+    }
 
-        // Check accessibility permission
+    private func handleHotkeyTrigger() {
+        guard !isTranscribing else { return }
         guard hotkeyManager.checkTrustStatus() else {
             hud.show(state: .accessibilityDenied)
             scheduleHUDHide(after: 2.0)
             return
         }
-
         NSHapticFeedbackManager.defaultPerformer.perform(.generic, performanceTime: .now)
-
-        if isRecording {
-            stopAndTranscribe()
-        } else {
+        switch recordingMode {
+        case .toggle:
+            if isRecording { stopAndTranscribe() } else { startRecording() }
+        case .pushToTalk:
+            guard !isRecording else { return }  // ignore key repeat while held
             startRecording()
         }
+    }
+
+    private func handleHotkeyRelease() {
+        guard recordingMode == .pushToTalk, isRecording else { return }
+        stopAndTranscribe()
     }
     
     private func startRecording() {

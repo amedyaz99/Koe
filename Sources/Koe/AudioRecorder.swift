@@ -1,4 +1,6 @@
+import AudioToolbox
 import AVFoundation
+import CoreAudio
 
 @MainActor
 class AudioRecorder {
@@ -53,7 +55,25 @@ class AudioRecorder {
 
     private func beginRecording() {
         let newEngine = AVAudioEngine()
+
+        // Apply selected microphone before querying format (format can differ per device)
         let input = newEngine.inputNode
+        let selectedUID = UserDefaults.standard.string(forKey: "koe.microphoneUID") ?? ""
+        if !selectedUID.isEmpty,
+           let device = MicrophoneDevice.allInputDevices().first(where: { $0.uid == selectedUID }),
+           device.id != 0,
+           let audioUnit = input.audioUnit {
+            var deviceID = device.id
+            AudioUnitSetProperty(
+                audioUnit,
+                kAudioOutputUnitProperty_CurrentDevice,
+                kAudioUnitScope_Global,
+                0,
+                &deviceID,
+                UInt32(MemoryLayout<AudioDeviceID>.size)
+            )
+        }
+
         let format = input.outputFormat(forBus: 0)
 
         let url = FileManager.default.temporaryDirectory

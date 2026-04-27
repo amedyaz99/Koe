@@ -60,6 +60,7 @@ struct OnboardingView: View {
     @State private var microphoneGranted = false
     @State private var accessibilityGranted = false
     @State private var showPermissionWarning = false
+    @State private var debugClickCount = 0
 
     var body: some View {
         ZStack {
@@ -72,6 +73,12 @@ struct OnboardingView: View {
                 VStack(spacing: 12) {
                     InkanStamp(size: 44)
                         .padding(.top, 40)
+                        .onTapGesture {
+                            debugClickCount += 1
+                            if debugClickCount >= 3 {
+                                appState.completeOnboarding()
+                            }
+                        }
                     
                     HStack(alignment: .lastTextBaseline, spacing: 2) {
                         Text("Koe")

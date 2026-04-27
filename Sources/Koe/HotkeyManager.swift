@@ -8,12 +8,14 @@ final class HotkeyManager: ObservableObject {
 
     private let onTrigger: () -> Void
     private let onEscape: (() -> Void)?
+    private let onRelease: (() -> Void)?
     private var eventTap: CFMachPort?
     private var runLoopSource: CFRunLoopSource?
 
-    init(onTrigger: @escaping () -> Void, onEscape: (() -> Void)? = nil) {
+    init(onTrigger: @escaping () -> Void, onEscape: (() -> Void)? = nil, onRelease: (() -> Void)? = nil) {
         self.onTrigger = onTrigger
         self.onEscape = onEscape
+        self.onRelease = onRelease
 
         NotificationCenter.default.addObserver(
             self,
@@ -93,6 +95,7 @@ final class HotkeyManager: ObservableObject {
 
         let eventMask = CGEventMask(
             (1 << CGEventType.keyDown.rawValue) |
+            (1 << CGEventType.keyUp.rawValue) |
             (1 << CGEventType.tapDisabledByTimeout.rawValue) |
             (1 << CGEventType.tapDisabledByUserInput.rawValue)
         )
@@ -108,10 +111,18 @@ final class HotkeyManager: ObservableObject {
                 return Unmanaged.passUnretained(event)
             }
 
-            guard type == .keyDown else { return Unmanaged.passUnretained(event) }
-
             let keyCode = event.getIntegerValueField(.keyboardEventKeycode)
             let modifiers = event.flags.intersection([.maskAlternate, .maskCommand, .maskControl, .maskShift])
+
+            if type == .keyUp {
+                guard keyCode == manager.targetKeyCode, modifiers == manager.targetModifiers else {
+                    return Unmanaged.passUnretained(event)
+                }
+                manager.onRelease?()
+                return nil
+            }
+
+            guard type == .keyDown else { return Unmanaged.passUnretained(event) }
 
             if keyCode == 53 { // Escape
                 manager.onEscape?()

@@ -8,7 +8,7 @@ enum KoeTheme {
     static let sumiInk      = Color(hexVal: 0x1A1A1A)   // Deep Sumi Ink — Background
     static let sumiInkLight = Color(hexVal: 0x2A2A2A)   // Lighter Charcoal — Hovered cards
     static let washiPaper   = Color(hexVal: 0xF5F5F0)   // Warm Washi Paper — Primary text
-    static let washiMuted   = Color(hexVal: 0xA0A09A)   // Muted Washi — Secondary text/Timestamps
+    static let washiMuted   = Color(hexVal: 0xC0C0BA)   // Muted Washi — Secondary text/Timestamps
     static let vermilion    = Color(hexVal: 0xD35400)   // Vermilion — Accent
     static let gold         = Color(hexVal: 0xD4AF37)   // Subtle gold — Highlights
 
@@ -19,9 +19,9 @@ enum KoeTheme {
 
     // MARK: - Typography
     static let monoCaption = Font.system(.caption, design: .monospaced)
-    static let monoSmall   = Font.system(size: 11, design: .monospaced)
-    static let monoTiny    = Font.system(size: 10, design: .monospaced)
-    
+    static let monoSmall   = Font.system(size: 13, design: .monospaced)
+    static let monoTiny    = Font.system(size: 12, design: .monospaced)
+
     static let mainText    = Font.system(.body, design: .default)
     static let mainSmall   = Font.system(.subheadline, design: .default)
 

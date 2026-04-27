@@ -29,7 +29,11 @@ class SettingsWindowController: NSObject, NSWindowDelegate {
             defer: false
         )
 
-        window.title = "Settings"
+        window.title = "Koe"
+        window.titleVisibility = .hidden
+        window.titlebarAppearsTransparent = true
+        window.backgroundColor = NSColor(red: 26/255, green: 26/255, blue: 26/255, alpha: 1)
+        window.appearance = NSAppearance(named: .darkAqua)
         window.contentView = NSHostingView(rootView: contentView)
         window.center()
         window.delegate = self

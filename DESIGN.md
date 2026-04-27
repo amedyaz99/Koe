@@ -1,4 +1,4 @@
-# Koe — Design System
+x# Koe — Design System
 
 **Version:** 1.1
 **App:** Koe (声) — voice to clipboard, macOS

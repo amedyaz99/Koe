@@ -97,24 +97,26 @@ class WhisperTranscriber: @unchecked Sendable {
     }
 
     private func resolveBinary() -> URL? {
-        if let url = Bundle.main.url(forResource: "whisper-cli", withExtension: nil) {
-            return url
-        }
         let candidates = [
             "/opt/homebrew/bin/whisper-cli",
             "/usr/local/bin/whisper-cli",
         ]
-        return candidates
-            .map { URL(fileURLWithPath: $0) }
-            .first { FileManager.default.fileExists(atPath: $0.path) }
+        if let systemBinary = candidates
+            .map({ URL(fileURLWithPath: $0) })
+            .first(where: { FileManager.default.fileExists(atPath: $0.path) }) {
+            return systemBinary
+        }
+        
+        return Bundle.main.url(forResource: "whisper-cli", withExtension: nil)
     }
 
     private func resolveModel() -> URL? {
-        if let url = Bundle.main.url(forResource: "ggml-base.en", withExtension: "bin") {
-            return url
-        }
         let support = FileManager.default.homeDirectoryForCurrentUser
             .appendingPathComponent("Library/Application Support/Koe/ggml-base.en.bin")
-        return FileManager.default.fileExists(atPath: support.path) ? support : nil
+        if FileManager.default.fileExists(atPath: support.path) {
+            return support
+        }
+        
+        return Bundle.main.url(forResource: "ggml-base.en", withExtension: "bin")
     }
 }

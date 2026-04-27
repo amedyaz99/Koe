@@ -210,7 +210,13 @@ class HUDWindow: NSWindow {
     }
 
     private func position() {
-        guard let screen = NSScreen.main else { return }
+        let mouseLocation = NSEvent.mouseLocation
+        let screens = NSScreen.screens
+        let targetScreen = screens.first { NSMouseInRect(mouseLocation, $0.frame, false) } 
+            ?? NSScreen.main 
+            ?? screens.first
+        
+        guard let screen = targetScreen else { return }
         let frame = screen.visibleFrame
         let x = frame.midX - 150  // center the 300pt window
         let y = frame.minY + 60
