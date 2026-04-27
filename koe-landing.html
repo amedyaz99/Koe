@@ -172,30 +172,47 @@
             60% {transform: translateY(-5px);}
         }
 
-        /* Trust Strip Grid */
-        .trust-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 80px;
+        /* Trust Strip: One-line horizontal layout */
+        .trust-strip {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 60px;
             max-width: 1000px;
             margin: 0 auto;
         }
 
-        .trust-item {
-            padding: 40px 20px;
-            border-top: 1px solid var(--amber);
-            border-bottom: 1px solid var(--amber);
-            animation: trustItemFade 0.8s ease-out 0.2s backwards;
+        .trust-badge {
+            --delay: 0s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            opacity: 0;
+            animation: trustBadgeScale 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+            animation-delay: var(--delay);
         }
 
-        @keyframes trustItemFade {
+        .trust-badge span.serif {
+            display: block;
+            color: var(--amber);
+            line-height: 1;
+        }
+
+        .trust-badge span.mono {
+            display: block;
+            font-size: 10px;
+            letter-spacing: 0.15em;
+        }
+
+        @keyframes trustBadgeScale {
             from {
                 opacity: 0;
-                transform: translateY(8px);
+                transform: scale(0.8);
             }
             to {
                 opacity: 1;
-                transform: translateY(0);
+                transform: scale(1);
             }
         }
 
@@ -234,11 +251,15 @@
             }
         }
 
-        /* Ensure cards are responsive */
+        /* Responsive */
         @media (max-width: 768px) {
-            .trust-grid {
-                grid-template-columns: repeat(2, 1fr);
+            .trust-strip {
                 gap: 40px;
+                flex-wrap: wrap;
+            }
+
+            .trust-badge span.serif {
+                font-size: 14px;
             }
 
             .testimonial-card {
@@ -315,26 +336,23 @@
     </section>
 
     <!-- 04 Trust Strip: Social Proof -->
-    <section style="padding: 120px 48px; min-height: auto;">
-        <div style="max-width: 1000px; width: 100%; text-align: center;">
-            <p class="mono" style="margin-bottom: 60px; color: var(--stone);">Used by creators and developers</p>
-            <div class="trust-grid">
-                <div class="trust-item">
-                    <p class="serif" style="font-size: 20px; margin-bottom: 8px;">2,100+</p>
-                    <p class="mono" style="color: var(--stone);">Active users</p>
-                </div>
-                <div class="trust-item">
-                    <p class="serif" style="font-size: 20px; margin-bottom: 8px;">97%</p>
-                    <p class="mono" style="color: var(--stone);">Recommend</p>
-                </div>
-                <div class="trust-item">
-                    <p class="serif" style="font-size: 20px; margin-bottom: 8px;">15</p>
-                    <p class="mono" style="color: var(--stone);">Languages</p>
-                </div>
-                <div class="trust-item">
-                    <p class="serif" style="font-size: 20px; margin-bottom: 8px;">100%</p>
-                    <p class="mono" style="color: var(--stone);">Private</p>
-                </div>
+    <section style="padding: 60px 48px; min-height: auto;">
+        <div class="trust-strip">
+            <div class="trust-badge">
+                <span class="serif" style="font-size: 16px; font-weight: 500;">2,100+</span>
+                <span class="mono">Users</span>
+            </div>
+            <div class="trust-badge" style="--delay: 0.1s;">
+                <span class="serif" style="font-size: 16px; font-weight: 500;">97%</span>
+                <span class="mono">Recommend</span>
+            </div>
+            <div class="trust-badge" style="--delay: 0.2s;">
+                <span class="serif" style="font-size: 16px; font-weight: 500;">15</span>
+                <span class="mono">Languages</span>
+            </div>
+            <div class="trust-badge" style="--delay: 0.3s;">
+                <span class="serif" style="font-size: 16px; font-weight: 500;">100%</span>
+                <span class="mono">Private</span>
             </div>
         </div>
     </section>
